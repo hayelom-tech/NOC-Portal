@@ -1,0 +1,75 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2470 >>
+stream
+BT
+/F1 20 Tf
+50 750 Td
+(SOP-02) Tj
+ET
+BT
+/F2 15 Tf
+50 720 Td
+(Change Management Procedure) Tj
+ET
+BT /F1 9 Tf 50 700 Td
+(Department: NOC Change Advisory Board   |   Safaricom Ethiopia PLC   |   Version 2.1   |   2026) Tj
+ET
+50 692 m 545 692 l S
+BT /F2 11 Tf 50 675 Td (1. Purpose & Scope) Tj ET
+BT /F1 9 Tf 50 657 Td (Governs all planned and emergency changes to Safaricom Ethiopia live network infrastructure.) Tj ET
+BT /F1 9 Tf 50 644 Td (Applies to all domains: RAN, Transmission, Core PS/CS, and Power Systems.) Tj ET
+BT /F2 11 Tf 50 623 Td (2. Change Categories) Tj ET
+BT /F1 9 Tf 60 605 Td (• Standard Change \(SC\): Pre-approved, low-risk, repeatable. No CAB approval required.) Tj ET
+BT /F1 9 Tf 60 592 Td (• Normal Change \(NC\): Requires full CAB review. Minimum 5-business-day lead time.) Tj ET
+BT /F1 9 Tf 60 579 Td (• Emergency Change \(EC\): P1/P2 incident-driven. Expedited CAB approval within 2 hours.) Tj ET
+BT /F2 11 Tf 50 558 Td (3. CR Submission Requirements) Tj ET
+BT /F1 9 Tf 60 540 Td (• Submit CR via ITSM portal with full technical justification and rollback plan.) Tj ET
+BT /F1 9 Tf 60 527 Td (• Mandatory fields: Impact assessment, risk rating, test plan, rollback procedure.) Tj ET
+BT /F1 9 Tf 60 514 Td (• Attach vendor/OEM technical note for all hardware changes.) Tj ET
+BT /F2 11 Tf 50 493 Td (4. CAB Review Process) Tj ET
+BT /F1 9 Tf 60 475 Td (• Weekly CAB meeting: every Tuesday 14:00 EAT.) Tj ET
+BT /F1 9 Tf 60 462 Td (• Emergency CAB: convened within 2 hours via NOC bridge call.) Tj ET
+BT /F1 9 Tf 60 449 Td (• All domain heads must be present or provide written delegate authority.) Tj ET
+BT /F2 11 Tf 50 428 Td (5. Change Execution) Tj ET
+BT /F1 9 Tf 60 410 Td (• Implement only during approved maintenance window.) Tj ET
+BT /F1 9 Tf 60 397 Td (• NOC L1 operator on standby throughout execution.) Tj ET
+BT /F1 9 Tf 60 384 Td (• Real-time monitoring mandatory during and 30 min post-implementation.) Tj ET
+BT /F1 9 Tf 60 371 Td (• Rollback decision must be made within agreed window if KPIs degrade >5%.) Tj ET
+BT /F2 11 Tf 50 350 Td (6. Post-Change Review) Tj ET
+BT /F1 9 Tf 60 332 Td (• Verify all KPIs returned to pre-change baseline within 1 hour.) Tj ET
+BT /F1 9 Tf 60 319 Td (• Update CMDB with all configuration changes made.) Tj ET
+BT /F1 9 Tf 60 306 Td (• Close CR in ITSM with implementation notes and outcome documented.) Tj ET
+BT /F1 8 Tf 50 30 Td (CONFIDENTIAL — For internal NOC use only. Safaricom Ethiopia PLC.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000254 00000 n 
+0000002776 00000 n 
+0000002846 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+2921
+%%EOF

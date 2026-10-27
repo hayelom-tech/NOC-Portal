@@ -1,0 +1,9 @@
+SiteID,Region,Power,Downtime,RootCause
+ETH-AF-0023,Afar,Grid Failure,72h,No commercial power - fuel supply chain delay
+ETH-NE-0111,North East,DG Fault,48h,Generator cranking failure - parts ordered
+ETH-NW-0089,North West,Battery Depletion,36h,UPS bank replacement in progress
+ETH-W-0204,West,Fiber Cut,96h,MW relay fiber severed - contractor dispatched
+ETH-N-0317,North,Grid Failure,24h,Load shedding - utility restoration pending
+ETH-E1-0412,East 1,Power Fluctuation,18h,Voltage regulator failure - crew on-site
+ETH-AF-0067,Afar,DG Fuel,60h,Fuel logistics delay - remote site access issue
+ETH-NW-0145,North West,Grid Failure,84h,Commercial power outage - escalated to utility

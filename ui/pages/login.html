@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOC Portal — Safaricom Ethiopia</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            theme: { extend: { colors: { safaricomGreen: '#00B050', safaricomRed: '#FF0000' } } }
+        }
+    </script>
+    <style>
+        @keyframes pulse-ring {
+            0%   { transform: scale(0.95); opacity: 0.5; }
+            70%  { transform: scale(1.05); opacity: 0.2; }
+            100% { transform: scale(0.95); opacity: 0.5; }
+        }
+        @keyframes float-dot {
+            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.15; }
+            33%       { transform: translateY(-30px) translateX(15px); opacity: 0.35; }
+            66%       { transform: translateY(15px) translateX(-10px); opacity: 0.2; }
+        }
+        @keyframes slide-up { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+
+        .dot { position:absolute; border-radius:50%; animation: float-dot linear infinite; }
+        .animate-slide-up { animation: slide-up 0.5s ease both; }
+        .animate-shake { animation: shake 0.4s ease; }
+
+        .glass-card {
+            background: rgba(15,23,42,0.85);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.08);
+        }
+
+        .input-field {
+            background: rgba(30,41,59,0.8);
+            border: 1px solid rgba(100,116,139,0.3);
+            color: #e2e8f0;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .input-field:focus {
+            outline: none;
+            border-color: #00B050;
+            box-shadow: 0 0 0 3px rgba(0,176,80,0.15);
+        }
+        .input-field::placeholder { color: #475569; }
+
+        .btn-login {
+            background: linear-gradient(135deg, #00B050 0%, #009040 100%);
+            transition: all 0.2s;
+            position: relative;
+            overflow: hidden;
+        }
+        .btn-login:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(0,176,80,0.35); }
+        .btn-login:active { transform: translateY(0); }
+        .btn-login::after {
+            content: '';
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
+            pointer-events: none;
+        }
+
+        .cred-card {
+            background: rgba(30,41,59,0.6);
+            border: 1px solid rgba(100,116,139,0.2);
+            transition: border-color 0.2s, background 0.2s;
+            cursor: pointer;
+        }
+        .cred-card:hover { border-color: rgba(0,176,80,0.4); background: rgba(30,41,59,0.9); }
+    </style>
+    <script>
+        fetch('/api/v1/auth/me')
+            .then(response => {
+                if (response.ok) return response.json();
+                throw new Error();
+            })
+            .then(user => {
+                sessionStorage.setItem('nocLoggedIn', 'true');
+                sessionStorage.setItem('nocUsername', user.username);
+                sessionStorage.setItem('nocUserRole', user.role);
+                sessionStorage.setItem('nocDisplayName', user.full_name);
+                window.location.replace('/');
+            })
+            .catch(() => {});
+    </script>
+</head>
+<body class="min-h-screen flex items-center justify-center relative overflow-hidden" style="background: linear-gradient(135deg, #020818 0%, #0a1628 40%, #071220 100%);">
+
+    <!-- Animated background dots -->
+    <div id="bgDots" aria-hidden="true"></div>
+
+    <!-- Glowing orbs -->
+    <div class="absolute w-96 h-96 rounded-full pointer-events-none" style="background:radial-gradient(circle,rgba(0,176,80,0.12) 0%,transparent 70%); top:-10%; left:-10%;"></div>
+    <div class="absolute w-80 h-80 rounded-full pointer-events-none" style="background:radial-gradient(circle,rgba(0,100,200,0.1) 0%,transparent 70%); bottom:-5%; right:-5%;"></div>
+
+    <!-- Login Card -->
+    <div class="relative z-10 w-full max-w-md px-4 animate-slide-up">
+        <div class="glass-card rounded-3xl p-8 shadow-2xl">
+
+            <!-- Logo & Brand -->
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" style="background:linear-gradient(135deg,#00B050,#007030);">
+                    <i class="fa-solid fa-tower-broadcast text-white text-2xl"></i>
+                </div>
+                <div class="flex items-center justify-center gap-2 mb-1">
+                    <span class="text-safaricomRed text-2xl font-black">●</span>
+                    <span class="text-white text-2xl font-black tracking-tight">Safaricom</span>
+                    <span class="text-slate-400 text-sm font-normal border-l border-slate-700 pl-2">Ethiopia</span>
+                </div>
+                <h1 class="text-slate-300 text-sm font-semibold tracking-widest uppercase">Network Operations Center</h1>
+                <p class="text-slate-500 text-xs mt-1">Restricted Access — Authorized Personnel Only</p>
+            </div>
+
+            <!-- Login Form -->
+            <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
+                <!-- Username -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Username</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
+                            <i class="fa-solid fa-user text-xs"></i>
+                        </span>
+                        <input type="text" id="username" autocomplete="username"
+                            class="input-field w-full rounded-xl pl-10 pr-4 py-3 text-sm"
+                            placeholder="Enter username" required>
+                    </div>
+                </div>
+
+                <!-- Password -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
+                    <div class="relative">
+                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
+                            <i class="fa-solid fa-lock text-xs"></i>
+                        </span>
+                        <input type="password" id="password" autocomplete="current-password"
+                            class="input-field w-full rounded-xl pl-10 pr-12 py-3 text-sm"
+                            placeholder="Enter password" required>
+                        <button type="button" onclick="togglePassword()" tabindex="-1"
+                            class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors">
+                            <i id="eyeIcon" class="fa-solid fa-eye text-xs"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Error -->
+                <div id="errorBox" class="hidden bg-red-950/60 border border-red-700/40 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                    <i class="fa-solid fa-circle-exclamation text-red-400 text-xs shrink-0"></i>
+                    <p class="text-red-400 text-xs font-semibold">Invalid username or password. Try again.</p>
+                </div>
+
+                <!-- Submit -->
+                <button type="submit" id="loginBtn" class="btn-login w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 mt-2">
+                    <i class="fa-solid fa-right-to-bracket"></i>
+                    <span id="btnText">Sign In to NOC Portal</span>
+                </button>
+            </form>
+
+            <p class="text-center text-slate-500 text-xs mt-5">Ask your portal administrator to create your account.</p>
+        </div>
+
+        <p class="text-center text-slate-700 text-[10px] mt-4">© 2026 Safaricom Ethiopia PLC — NOC Operations</p>
+    </div>
+
+    <script>
+        async function handleLogin(e) {
+            e.preventDefault();
+            const username = document.getElementById('username').value.trim().toLowerCase();
+            const password = document.getElementById('password').value;
+            const errorBox = document.getElementById('errorBox');
+            const errorText = errorBox.querySelector('p');
+            const button = document.getElementById('loginBtn');
+            button.disabled = true;
+            errorBox.classList.add('hidden');
+            try {
+                const response = await fetch('/api/v1/auth/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+                const result = await response.json();
+                if (!response.ok) {
+                    const detail = Array.isArray(result.detail)
+                        ? result.detail.map(item => item.msg).join('; ')
+                        : result.detail;
+                    throw new Error(detail || 'Sign-in failed.');
+                }
+                sessionStorage.setItem('nocLoggedIn', 'true');
+                sessionStorage.setItem('nocUsername', result.user.username);
+                sessionStorage.setItem('nocUserRole', result.user.role);
+                sessionStorage.setItem('nocDisplayName', result.user.full_name);
+                button.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Authenticated — Redirecting…</span>';
+                window.location.replace('/');
+            } catch (error) {
+                errorText.textContent = error.message || 'Unable to sign in. Please try again.';
+                errorBox.classList.remove('hidden');
+                errorBox.classList.add('animate-shake');
+                setTimeout(() => errorBox.classList.remove('animate-shake'), 500);
+                document.getElementById('password').value = '';
+                document.getElementById('password').focus();
+            } finally {
+                button.disabled = false;
+            }
+        }
+
+        function togglePassword() {
+            const pw = document.getElementById('password');
+            const icon = document.getElementById('eyeIcon');
+            if (pw.type === 'password') {
+                pw.type = 'text';
+                icon.className = 'fa-solid fa-eye-slash text-xs';
+            } else {
+                pw.type = 'password';
+                icon.className = 'fa-solid fa-eye text-xs';
+            }
+        }
+
+        // ─── Animated background dots ────────────────────────────────────────────
+        (function spawnDots() {
+            const container = document.getElementById('bgDots');
+            const colors = ['rgba(0,176,80,0.3)', 'rgba(0,100,200,0.25)', 'rgba(100,200,255,0.2)', 'rgba(255,255,255,0.15)'];
+            for (let i = 0; i < 22; i++) {
+                const dot = document.createElement('div');
+                const size = Math.random() * 180 + 20;
+                dot.className = 'dot';
+                dot.style.cssText = `
+                    width:${size}px; height:${size}px;
+                    left:${Math.random()*100}%; top:${Math.random()*100}%;
+                    background: radial-gradient(circle, ${colors[i%colors.length]} 0%, transparent 70%);
+                    animation-duration: ${8 + Math.random()*14}s;
+                    animation-delay: ${-Math.random()*10}s;
+                    filter: blur(${size*0.3}px);
+                `;
+                container.appendChild(dot);
+            }
+        })();
+    </script>
+</body>
+</html>

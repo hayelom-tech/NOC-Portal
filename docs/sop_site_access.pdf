@@ -1,0 +1,76 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2536 >>
+stream
+BT
+/F1 20 Tf
+50 750 Td
+(SOP-03) Tj
+ET
+BT
+/F2 15 Tf
+50 720 Td
+(Site Access Procedure) Tj
+ET
+BT /F1 9 Tf 50 700 Td
+(Department: Field Operations & Security   |   Safaricom Ethiopia PLC   |   Version 2.1   |   2026) Tj
+ET
+50 692 m 545 692 l S
+BT /F2 11 Tf 50 675 Td (1. Purpose & Scope) Tj ET
+BT /F1 9 Tf 50 657 Td (Defines authorization and tracking requirements for all physical access to Safaricom) Tj ET
+BT /F1 9 Tf 50 644 Td (Ethiopia network sites by internal staff, contractors, and third-party vendors.) Tj ET
+BT /F2 11 Tf 50 623 Td (2. Access Categories) Tj ET
+BT /F1 9 Tf 60 605 Td (• Internal Staff: Requires valid employee ID and site access badge.) Tj ET
+BT /F1 9 Tf 60 592 Td (• Contractors: Require approved work order and signed NDA on file.) Tj ET
+BT /F1 9 Tf 60 579 Td (• Vendors/OEM: Require pre-approved vendor access form and escort by NOC engineer.) Tj ET
+BT /F2 11 Tf 50 558 Td (3. Pre-Access Authorization) Tj ET
+BT /F1 9 Tf 60 540 Td (• Submit site access request via NOC portal minimum 24 hours in advance.) Tj ET
+BT /F1 9 Tf 60 527 Td (• NOC supervisor approves request and issues time-bound access code.) Tj ET
+BT /F1 9 Tf 60 514 Td (• Security team notified with expected arrival window and personnel list.) Tj ET
+BT /F2 11 Tf 50 493 Td (4. On-Site Check-In) Tj ET
+BT /F1 9 Tf 60 475 Td (• Register at site security checkpoint with photo ID and access code.) Tj ET
+BT /F1 9 Tf 60 462 Td (• Log entry time, purpose, equipment carried, and contact number.) Tj ET
+BT /F1 9 Tf 60 449 Td (• Collect site key from NOC duty engineer for secured equipment rooms.) Tj ET
+BT /F2 11 Tf 50 428 Td (5. During Site Visit) Tj ET
+BT /F1 9 Tf 60 410 Td (• Notify NOC L1 operator immediately upon arrival at equipment area.) Tj ET
+BT /F1 9 Tf 60 397 Td (• All equipment changes must be coordinated with NOC in real-time.) Tj ET
+BT /F1 9 Tf 60 384 Td (• No unauthorized power cycling of active network equipment permitted.) Tj ET
+BT /F1 9 Tf 60 371 Td (• Maintain communication with NOC via mobile phone throughout visit.) Tj ET
+BT /F2 11 Tf 50 350 Td (6. Site Departure) Tj ET
+BT /F1 9 Tf 60 332 Td (• Log departure time in the site access register.) Tj ET
+BT /F1 9 Tf 60 319 Td (• Return all keys and access cards to designated NOC contact.) Tj ET
+BT /F1 9 Tf 60 306 Td (• Notify NOC L1 operator upon safe departure from site.) Tj ET
+BT /F1 9 Tf 60 293 Td (• Submit site visit report within 4 hours if any issues encountered.) Tj ET
+BT /F1 8 Tf 50 30 Td (CONFIDENTIAL — For internal NOC use only. Safaricom Ethiopia PLC.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000254 00000 n 
+0000002842 00000 n 
+0000002912 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+2987
+%%EOF

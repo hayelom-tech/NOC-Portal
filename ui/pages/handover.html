@@ -1,0 +1,550 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOC Operational Shift Handover | Safaricom</title>
+    <script>
+        if (!sessionStorage.getItem('nocLoggedIn')) {
+            fetch('/api/v1/auth/me')
+                .then(r => { if (r.ok) return r.json(); throw new Error(); })
+                .then(user => {
+                    sessionStorage.setItem('nocLoggedIn', 'true');
+                    sessionStorage.setItem('nocUsername', user.username);
+                    sessionStorage.setItem('nocUserRole', user.role);
+                    sessionStorage.setItem('nocDisplayName', user.full_name);
+                    const nameEl = document.getElementById('userNameDisplay');
+                    if (nameEl) nameEl.textContent = user.full_name;
+                    const badgeEl = document.getElementById('roleBadge');
+                    if (badgeEl) badgeEl.textContent = user.role.toUpperCase();
+                })
+                .catch(() => { window.location.replace('login.html'); });
+        }
+    </script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <script>
+        // Extending Tailwind configuration with Safaricom Brand Identity Guidelines
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        safaricomGreen: '#00B050',
+                        safaricomRed: '#FF0000',
+                        safaricomDark: '#1E293B',
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-900 font-sans text-slate-100 min-h-screen flex flex-col">
+
+    <header class="bg-white border-b border-gray-200 sticky top-0 z-50 shadow-sm text-gray-800">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="flex items-center font-bold text-2xl tracking-tight text-safaricomGreen">
+                    <span class="text-safaricomRed text-3xl mr-1">●</span>Safaricom 
+                    <span class="text-safaricomDark font-normal ml-2 text-lg border-l pl-2 border-gray-300 hidden sm:inline">NOC Portal</span>
+                </div>
+            </div>
+            
+            <div class="flex items-center space-x-4">
+                <div class="hidden sm:flex flex-col items-end">
+                    <span id="userNameDisplay" class="text-xs font-bold text-slate-800">NOC Operator</span>
+                    <span id="roleBadge" class="text-[9px] bg-green-600 text-white px-1.5 py-0.5 rounded uppercase font-bold">Operator</span>
+                </div>
+                <button onclick="logout()" class="flex items-center gap-2 text-xs font-bold text-red-500 hover:text-red-700 transition-colors uppercase">
+                    <i class="fa-solid fa-right-from-bracket"></i> Logout
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 flex flex-col lg:flex-row gap-6 w-full flex-1">
+        
+        <aside class="w-full lg:w-64 shrink-0">
+            <nav class="flex flex-row lg:flex-col overflow-x-auto lg:overflow-visible bg-slate-800 p-2 rounded-2xl border border-slate-700/50 gap-1 shadow-xl">
+                <a href="index.html" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 rounded-xl whitespace-nowrap hover:bg-slate-700/50 hover:text-white transition-all">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i> Dashboard
+                </a>
+                <a href="roster.html" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 rounded-xl whitespace-nowrap hover:bg-slate-700/50 hover:text-white transition-all">
+                    <i class="fa-solid fa-calendar-days w-5 text-center"></i> NOC Roster
+                </a>
+                <a href="oncall.html" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 rounded-xl whitespace-nowrap hover:bg-slate-700/50 hover:text-white transition-all">
+                    <i class="fa-solid fa-phone-volume w-5 text-center"></i> L2 On-Call Team
+                </a>
+                <a href="process.html" class="flex items-center gap-3 px-4 py-3 text-sm font-medium text-slate-400 rounded-xl whitespace-nowrap hover:bg-slate-700/50 hover:text-white transition-all">
+                    <i class="fa-solid fa-book-open w-5 text-center"></i> NOC Process
+                </a>
+                <a href="handover.html" class="flex items-center gap-3 px-4 py-3 text-sm font-bold rounded-xl whitespace-nowrap bg-safaricomGreen text-white shadow-md transition-all">
+                    <i class="fa-solid fa-arrow-right-arrow-left w-5 text-center text-white"></i> Shift Handover
+                </a>
+            </nav>
+        </aside>
+
+        <main class="flex-1 space-y-6">
+            
+            <div class="bg-slate-800/60 border border-slate-700/50 p-4 rounded-2xl shadow-xl flex flex-col sm:flex-row items-center justify-between gap-4">
+                <div>
+                    <h2 class="text-base font-black text-white tracking-tight">Shift Handover Exchange Portal</h2>
+                    <p class="text-xs text-slate-400 font-medium">Log active observations, metrics, and network posture changes for the incoming shift</p>
+                </div>
+                <div class="text-xs text-slate-400 font-mono bg-slate-900 px-3 py-1.5 rounded-xl border border-slate-700/60">
+                    <i class="fa-solid fa-clock text-safaricomGreen mr-1"></i> Log Time: <span id="liveClock">--:--:--</span>
+                </div>
+            </div>
+
+            <form id="handoverForm" onsubmit="handleFormSubmit(event)" class="space-y-6">
+                
+                <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 shadow-xl space-y-4">
+                    <div class="border-b border-slate-700/60 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-pen-to-square text-safaricomGreen text-sm"></i>
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">Section 1: Next Shift Priorities & Challenges</h3>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wide mb-2">Update for Next Shift *</label>
+                            <textarea required id="nextShiftUpdate" rows="3" placeholder="Provide general status summaries, system restorations, or critical updates..." class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-safaricomGreen focus:ring-1 focus:ring-safaricomGreen"></textarea>
+                        </div>
+
+                        <div class="bg-slate-900/40 p-4 rounded-xl border border-slate-700/40 space-y-3">
+                            <label class="block text-xs font-bold text-slate-300 uppercase tracking-wide">Are there any operational challenges the next shift should be aware of?</label>
+                            <div class="flex items-center gap-4">
+                                <label class="inline-flex items-center text-xs text-slate-300 cursor-pointer">
+                                    <input type="radio" name="challengeRadio" value="no" checked onclick="toggleChallengeDetails(false)" class="text-safaricomGreen focus:ring-0 bg-slate-800 border-slate-700 mr-2"> No Challenges
+                                </label>
+                                <label class="inline-flex items-center text-xs text-slate-300 cursor-pointer">
+                                    <input type="radio" name="challengeRadio" value="yes" onclick="toggleChallengeDetails(true)" class="text-safaricomGreen focus:ring-0 bg-slate-800 border-slate-700 mr-2"> Yes, Active Challenges
+                                </label>
+                            </div>
+                            <div id="challengeDetailsContainer" class="hidden pt-2">
+                                <label class="block text-[11px] font-bold text-amber-400 uppercase tracking-wide mb-1.5">Additional Challenge Details *</label>
+                                <textarea id="challengeDetails" rows="2" placeholder="Specify severe weather dependencies, power anomalies, fiber cuts, or restricted system degradation details..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-500"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 shadow-xl space-y-3">
+                        <div class="border-b border-slate-700/60 pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-sliders text-sky-400 text-sm"></i>
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Ongoing CR or PM Activities</h3>
+                        </div>
+                        <p class="text-[11px] text-slate-400">List active Change Requests (CR) or Planned Maintenance (PM) currently executing on the live network.</p>
+                        <textarea id="ongoingCrPm" rows="3" placeholder="e.g., Core Router software patch upgrade (CR-4820), Core Failover validation..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-sky-400"></textarea>
+                    </div>
+
+                    <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 shadow-xl space-y-3">
+                        <div class="border-b border-slate-700/60 pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-person-digging text-amber-400 text-sm"></i>
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Active Field Teams On-Site</h3>
+                        </div>
+                        <p class="text-[11px] text-slate-400">List all engineering personnel, regional troubleshooters, or vendors currently dispatched to active coordinates.</p>
+                        <textarea id="teamsOnSite" rows="3" placeholder="e.g., Regional field crew evaluating DG power failure at Gondar Node-B site..." class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-xs text-slate-200 focus:outline-none focus:border-amber-400"></textarea>
+                    </div>
+                </div>
+
+                <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 shadow-xl space-y-4">
+                    <div class="border-b border-slate-700/60 pb-3 flex items-center gap-2">
+                        <i class="fa-solid fa-circle-exclamation text-safaricomRed text-sm"></i>
+                        <h3 class="text-xs font-bold text-white uppercase tracking-wider">Section 2: Major Incident & Ticket Statistics</h3>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wide mb-1.5">Major Incidents During Shift</label>
+                            <input type="number" id="majorIncidentsCount" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-safaricomGreen">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wide mb-1.5">Resolved Major Incidents</label>
+                            <input type="number" id="resolvedIncidentsCount" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-safaricomGreen">
+                        </div>
+                        <div>
+                            <label class="block text-[11px] font-bold text-slate-300 uppercase tracking-wide mb-1.5">Alarms Pending Resolution</label>
+                            <input type="number" id="pendingAlarmsCount" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-safaricomGreen">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 shadow-xl space-y-4">
+                        <div class="border-b border-slate-700/60 pb-2 flex items-center gap-2">
+                            <i class="fa-solid fa-map-location-dot text-purple-400 text-sm"></i>
+                            <h3 class="text-xs font-bold text-white uppercase tracking-wider">Corrective Maintenance (CM) per Region</h3>
+                        </div>
+                        <div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Afar</label>
+                                <input type="number" id="cmAfar" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-400">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">North</label>
+                                <input type="number" id="cmNorth" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-400">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">North East</label>
+                                <input type="number" id="cmNorthEast" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-400">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">North West</label>
+                                <input type="number" id="cmNorthWest" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-400">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">West</label>
+                                <input type="number" id="cmWest" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-400">
+                            </div>
+                            <div>
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">East 1</label>
+                                <input type="number" id="cmEast1" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-400">
+                            </div>
+                            <div class="col-span-2 sm:col-span-1">
+                                <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">East 2</label>
+                                <input type="number" id="cmEast2" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200 focus:outline-none focus:border-purple-400">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 shadow-xl flex flex-col justify-between space-y-4">
+                        <div class="space-y-3">
+                            <div class="border-b border-slate-700/60 pb-2 flex items-center gap-2">
+                                <i class="fa-solid fa-square-check text-emerald-400 text-sm"></i>
+                                <h3 class="text-xs font-bold text-white uppercase tracking-wider">Closed Trouble Tickets (TT)</h3>
+                            </div>
+                            <p class="text-[11px] text-slate-400">Input total quantity of trouble tickets successfully completely closed and cleared inside your ticketing system during this shift.</p>
+                        </div>
+                        <div>
+                            <label class="block text-[10px] text-slate-400 uppercase font-bold mb-1">Total Closed TT Volume</label>
+                            <input type="number" id="closedTtCount" min="0" value="0" class="w-full bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-safaricomGreen">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-3 pt-2">
+                    <button type="button" onclick="clearCachedDraft()" class="px-4 py-2 border border-slate-700 hover:border-slate-500 rounded-xl text-xs font-bold text-slate-300 transition-colors">
+                        Reset Draft
+                    </button>
+                    <button type="submit" id="submitBtn" class="px-6 py-2 bg-safaricomGreen hover:bg-emerald-600 text-white font-bold text-xs rounded-xl transition-all shadow-md flex items-center gap-2">
+                        <i class="fa-solid fa-paper-plane"></i> Submit Handover Log
+                    </button>
+                </div>
+            </form>
+
+            <div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6 shadow-xl space-y-4">
+                <div class="border-b border-slate-700/60 pb-3 flex items-center gap-2">
+                    <i class="fa-solid fa-folder-tree text-sky-400 text-sm"></i>
+                    <h3 class="text-xs font-bold text-white uppercase tracking-wider">Archived Handover Records Index</h3>
+                </div>
+                <p class="text-xs text-slate-400">Select a shift log date badge below to view details and performance indicators for that specific window.</p>
+
+                <div id="dateArchiveList" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3 pt-2">
+                    </div>
+            </div>
+
+        </main>
+    </div>
+
+    <div id="handoverDetailsModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-700/80 w-full max-w-2xl rounded-2xl shadow-2xl p-6 space-y-4 max-h-[90vh] overflow-y-auto transform scale-95 transition-transform duration-200">
+            
+            <div class="flex items-center justify-between border-b border-slate-700 pb-3">
+                <div class="flex items-center gap-2 text-safaricomGreen">
+                    <i class="fa-solid fa-receipt text-lg"></i>
+                    <div>
+                        <h4 class="text-sm font-bold text-white">Shift Handover Record</h4>
+                        <p id="modalTimestamp" class="text-[11px] font-mono text-slate-400">Timestamp: --</p>
+                    </div>
+                </div>
+                <button onclick="closeDetailsModal()" class="text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 rounded-lg p-2 transition-all">
+                    <i class="fa-solid fa-xmark text-sm"></i>
+                </button>
+            </div>
+
+            <div class="space-y-4 text-xs">
+                <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800 space-y-2">
+                    <h5 class="font-bold text-safaricomGreen text-[11px] uppercase tracking-wider">Next Shift Directions</h5>
+                    <p id="modalNextUpdate" class="text-slate-300 leading-relaxed whitespace-pre-wrap">--</p>
+                    
+                    <div id="modalChallengeAlert" class="hidden mt-2 p-2.5 bg-amber-500/10 border border-amber-500/20 text-amber-400 rounded-lg">
+                        <span class="font-bold block text-[10px] uppercase mb-0.5"><i class="fa-solid fa-triangle-exclamation mr-1"></i>Reported Challenge Details:</span>
+                        <p id="modalChallengeText">--</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800 space-y-1">
+                        <h5 class="font-bold text-sky-400 text-[11px] uppercase tracking-wider mb-1">Ongoing CR & PM</h5>
+                        <p id="modalCrPm" class="text-slate-300 whitespace-pre-wrap">--</p>
+                    </div>
+                    <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800 space-y-1">
+                        <h5 class="font-bold text-amber-400 text-[11px] uppercase tracking-wider mb-1">Active Teams On-Site</h5>
+                        <p id="modalTeams" class="text-slate-300 whitespace-pre-wrap">--</p>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800">
+                    <h5 class="font-bold text-slate-400 text-[11px] uppercase tracking-wider mb-3">Core Performance Counters</h5>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-4 text-center">
+                        <div class="p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                            <span class="block text-[10px] text-slate-500 font-bold uppercase">Major Incidents</span>
+                            <span id="modalIncidentsCount" class="text-sm font-black text-safaricomRed">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                            <span class="block text-[10px] text-slate-500 font-bold uppercase">Resolved Major</span>
+                            <span id="modalResolvedCount" class="text-sm font-black text-safaricomGreen">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                            <span class="block text-[10px] text-slate-500 font-bold uppercase">Pending Alarms</span>
+                            <span id="modalPendingCount" class="text-sm font-black text-amber-400">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900 border border-slate-800 rounded-lg">
+                            <span class="block text-[10px] text-slate-500 font-bold uppercase">Closed TT Count</span>
+                            <span id="modalClosedCount" class="text-sm font-black text-emerald-400">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="bg-slate-950/40 p-4 rounded-xl border border-slate-800">
+                    <h5 class="font-bold text-purple-400 text-[11px] uppercase tracking-wider mb-2">Regional Corrective Maintenance (CM) Load</h5>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 font-mono text-center">
+                        <div class="p-2 bg-slate-900/60 rounded-lg">
+                            <span class="text-[10px] text-slate-400 block">Afar</span>
+                            <span id="modalCmAfar" class="text-xs font-bold text-slate-200">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900/60 rounded-lg">
+                            <span class="text-[10px] text-slate-400 block">North</span>
+                            <span id="modalCmNorth" class="text-xs font-bold text-slate-200">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900/60 rounded-lg">
+                            <span class="text-[10px] text-slate-400 block">North East</span>
+                            <span id="modalCmNorthEast" class="text-xs font-bold text-slate-200">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900/60 rounded-lg">
+                            <span class="text-[10px] text-slate-400 block">North West</span>
+                            <span id="modalCmNorthWest" class="text-xs font-bold text-slate-200">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900/60 rounded-lg">
+                            <span class="text-[10px] text-slate-400 block">West</span>
+                            <span id="modalCmWest" class="text-xs font-bold text-slate-200">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900/60 rounded-lg">
+                            <span class="text-[10px] text-slate-400 block">East 1</span>
+                            <span id="modalCmEast1" class="text-xs font-bold text-slate-200">0</span>
+                        </div>
+                        <div class="p-2 bg-slate-900/60 rounded-lg col-span-2 sm:col-span-1">
+                            <span class="text-[10px] text-slate-400 block">East 2</span>
+                            <span id="modalCmEast2" class="text-xs font-bold text-slate-200">0</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="flex justify-end pt-2 border-t border-slate-800">
+                <button onclick="closeDetailsModal()" class="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-white font-bold text-xs rounded-xl transition-colors">
+                    Close Sheet
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Updated Mocks containing precise architectural regional definitions
+        const standardFallbackMocks = [
+            {
+                timestamp: "2026-06-25T06:00:00.000Z",
+                nextShiftUpdate: "Routine shift swap complete. Transport loop routing paths running stable. Tracking configuration changes across core segments.",
+                hasChallenges: "no",
+                challengeDetails: "",
+                ongoingCrPm: "CR-9042: Core transport layer routing changes deployment.",
+                teamsOnSite: "Field crews executing fiber drop resolution workflows.",
+                metrics: { majorIncidents: "1", resolvedIncidents: "1", pendingAlarms: "0", closedTTs: "41" },
+                regionalCM: { afar: "2", north: "5", northEast: "4", northWest: "3", west: "7", east1: "8", east2: "4" }
+            },
+            {
+                timestamp: "2026-06-24T22:00:00.000Z",
+                nextShiftUpdate: "Inclement weather patterns identified near Northern and North West links. Extra verification steps implemented for alternative paths.",
+                hasChallenges: "yes",
+                challengeDetails: "Power grid failure affecting transmission backhauls in North West clusters.",
+                ongoingCrPm: "PM-1108: Standby generator automation failover sequences.",
+                teamsOnSite: "Regional vendor dispatch crews on coordinates handling grid drops.",
+                metrics: { majorIncidents: "3", resolvedIncidents: "2", pendingAlarms: "1", closedTTs: "29" },
+                regionalCM: { afar: "0", north: "14", northEast: "3", northWest: "19", west: "4", east1: "2", east2: "5" }
+            }
+        ];
+
+        function toggleChallengeDetails(show) {
+            const container = document.getElementById('challengeDetailsContainer');
+            const textarea = document.getElementById('challengeDetails');
+            if (show) {
+                container.classList.remove('hidden');
+                textarea.setAttribute('required', 'true');
+            } else {
+                container.classList.add('hidden');
+                textarea.removeAttribute('required');
+                textarea.value = "";
+            }
+        }
+
+        function initLiveClock() {
+            setInterval(() => {
+                const now = new Date();
+                document.getElementById('liveClock').innerText = now.toTimeString().split(' ')[0];
+            }, 1000);
+        }
+
+        function renderHandoverLogsArchive() {
+            let logs = JSON.parse(localStorage.getItem('nocHandoverLogsHistory'));
+            if (!logs || logs.length === 0) {
+                logs = standardFallbackMocks;
+                localStorage.setItem('nocHandoverLogsHistory', JSON.stringify(logs));
+            }
+
+            const listContainer = document.getElementById('dateArchiveList');
+            listContainer.innerHTML = "";
+
+            logs.forEach((log, index) => {
+                const dateObj = new Date(log.timestamp);
+                const explicitDateStr = dateObj.toLocaleDateString('en-US', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+                const explicitTimeStr = dateObj.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
+
+                const itemBtn = document.createElement('button');
+                itemBtn.type = "button";
+                itemBtn.onclick = () => openDetailsModal(index);
+                itemBtn.className = "flex items-center justify-between text-left p-3.5 bg-slate-900 border border-slate-700/60 rounded-xl hover:border-safaricomGreen hover:bg-slate-800/40 transition-all group shadow-sm";
+
+                itemBtn.innerHTML = `
+                    <div class="space-y-1">
+                        <span class="text-xs font-black text-slate-200 block group-hover:text-safaricomGreen transition-colors">${explicitDateStr}</span>
+                        <span class="text-[10px] text-slate-400 block font-mono"><i class="fa-regular fa-clock mr-1"></i>${explicitTimeStr}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        ${log.hasChallenges === 'yes' ? '<span class="text-[9px] bg-amber-500/20 text-amber-400 font-extrabold px-1.5 py-0.5 rounded uppercase tracking-wider">Alert</span>' : ''}
+                        <div class="h-7 w-7 rounded-lg bg-slate-800 flex items-center justify-center text-slate-400 group-hover:bg-safaricomGreen group-hover:text-white transition-all">
+                            <i class="fa-solid fa-arrow-right text-[11px]"></i>
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(itemBtn);
+            });
+        }
+
+        function openDetailsModal(index) {
+            const logs = JSON.parse(localStorage.getItem('nocHandoverLogsHistory')) || standardFallbackMocks;
+            const targetLog = logs[index];
+            if (!targetLog) return;
+
+            document.getElementById('modalTimestamp').innerText = `Timestamp Logged: ${new Date(targetLog.timestamp).toLocaleString()}`;
+            document.getElementById('modalNextUpdate').innerText = targetLog.nextShiftUpdate;
+            document.getElementById('modalCrPm').innerText = targetLog.ongoingCrPm || "No running changes logged.";
+            document.getElementById('modalTeams').innerText = targetLog.teamsOnSite || "No external teams on coordinates.";
+            
+            document.getElementById('modalIncidentsCount').innerText = targetLog.metrics.majorIncidents;
+            document.getElementById('modalResolvedCount').innerText = targetLog.metrics.resolvedIncidents;
+            document.getElementById('modalPendingCount').innerText = targetLog.metrics.pendingAlarms;
+            document.getElementById('modalClosedCount').innerText = targetLog.metrics.closedTTs;
+
+            // Mapping updated regions directly to view target elements
+            document.getElementById('modalCmAfar').innerText = targetLog.regionalCM.afar || 0;
+            document.getElementById('modalCmNorth').innerText = targetLog.regionalCM.north || 0;
+            document.getElementById('modalCmNorthEast').innerText = targetLog.regionalCM.northEast || 0;
+            document.getElementById('modalCmNorthWest').innerText = targetLog.regionalCM.northWest || 0;
+            document.getElementById('modalCmWest').innerText = targetLog.regionalCM.west || 0;
+            document.getElementById('modalCmEast1').innerText = targetLog.regionalCM.east1 || 0;
+            document.getElementById('modalCmEast2').innerText = targetLog.regionalCM.east2 || 0;
+
+            const alertBox = document.getElementById('modalChallengeAlert');
+            if (targetLog.hasChallenges === 'yes') {
+                alertBox.classList.remove('hidden');
+                document.getElementById('modalChallengeText').innerText = targetLog.challengeDetails;
+            } else {
+                alertBox.classList.add('hidden');
+            }
+
+            const modalEl = document.getElementById('handoverDetailsModal');
+            modalEl.classList.remove('hidden');
+            document.body.style.overflow = "hidden";
+        }
+
+        function closeDetailsModal() {
+            document.getElementById('handoverDetailsModal').classList.add('hidden');
+            document.body.style.overflow = "auto";
+        }
+
+        function handleFormSubmit(event) {
+            event.preventDefault();
+            
+            const newLog = {
+                timestamp: new Date().toISOString(),
+                nextShiftUpdate: document.getElementById('nextShiftUpdate').value,
+                hasChallenges: document.querySelector('input[name="challengeRadio"]:checked').value,
+                challengeDetails: document.getElementById('challengeDetails').value,
+                ongoingCrPm: document.getElementById('ongoingCrPm').value,
+                teamsOnSite: document.getElementById('teamsOnSite').value,
+                metrics: {
+                    majorIncidents: document.getElementById('majorIncidentsCount').value,
+                    resolvedIncidents: document.getElementById('resolvedIncidentsCount').value,
+                    pendingAlarms: document.getElementById('pendingAlarmsCount').value,
+                    closedTTs: document.getElementById('closedTtCount').value
+                },
+                // Form field mapping array structure aligned to new regional parameters
+                regionalCM: {
+                    afar: document.getElementById('cmAfar').value,
+                    north: document.getElementById('cmNorth').value,
+                    northEast: document.getElementById('cmNorthEast').value,
+                    northWest: document.getElementById('cmNorthWest').value,
+                    west: document.getElementById('cmWest').value,
+                    east1: document.getElementById('cmEast1').value,
+                    east2: document.getElementById('cmEast2').value
+                }
+            };
+
+            let logsHistory = JSON.parse(localStorage.getItem('nocHandoverLogsHistory')) || [];
+            logsHistory.unshift(newLog);
+            localStorage.setItem('nocHandoverLogsHistory', JSON.stringify(logsHistory));
+
+            renderHandoverLogsArchive();
+            alert("Success! Shift handover report has been compiled and logged.");
+            clearCachedDraft();
+        }
+
+        function clearCachedDraft() {
+            document.getElementById('handoverForm').reset();
+            toggleChallengeDetails(false);
+        }
+
+                async function logout() {
+                    await fetch('/api/v1/auth/logout', { method: 'POST' });
+                    sessionStorage.clear();
+                    window.location.href = 'login.html';
+                }
+
+        function initUser() {
+            const name = sessionStorage.getItem('nocDisplayName') || 'User';
+            const role = sessionStorage.getItem('nocUserRole') || 'guest';
+            const nameEl = document.getElementById('userNameDisplay');
+            const badge  = document.getElementById('roleBadge');
+            if (nameEl) nameEl.textContent = name;
+            if (badge) {
+                badge.textContent = role.charAt(0).toUpperCase() + role.slice(1);
+                badge.className = 'text-[9px] px-1.5 py-0.5 rounded uppercase font-bold ' + (
+                    role === 'admin'    ? 'bg-slate-700 text-white' :
+                    role === 'operator' ? 'bg-green-600 text-white' : 'bg-gray-400 text-white'
+                );
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            initLiveClock();
+            renderHandoverLogsArchive();
+            initUser();
+
+            document.getElementById('handoverDetailsModal').addEventListener('click', function(e) {
+                if(e.target === this) closeDetailsModal();
+            });
+        });
+    </script>
+</body>
+</html>

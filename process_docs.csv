@@ -1,0 +1,7 @@
+SopCode,Title,Description,Filename,Icon,Color
+SOP-01,Incident Management,"End-to-end framework detailing alarm monitoring, severity assignment (P1-P4), SLA milestones, and mandatory L2/L3 engineering escalation pathways.",sop_incident_management.pdf,triangle-exclamation,red
+SOP-02,Change Management,"Protocol governing scheduled network modifications, CR submission windows, Emergency CR criteria, rollback design structures, and CAB evaluation protocols.",sop_change_management.pdf,code-compare,amber
+SOP-03,Site Access Procedure,"Formal criteria for regional field teams and third-party vendors requesting physical facility log-ins. Includes tracking, authorization codes, and check-out logs.",sop_site_access.pdf,key,sky
+SOP-04,Network Health Check,"Routine morning and evening checklist instructions. Specifies traffic capacity calculations, key KPI validations (SSR, DCR), and alarm parsing guidelines.",sop_network_health_check.pdf,heart-pulse,purple
+SOP-05,Site Handover Process,"Formal acceptance criteria for newly integrated base stations from deployment vendors into live operational billing cycles.",sop_site_handover.pdf,handshake,emerald
+SOP-06,Escalation Matrix,"Tiered escalation contacts from L1 NOC operator through L3 domain specialist and vendor engagement. Covers SLA breach triggers and management thresholds.",sop_escalation_matrix.pdf,arrow-up-right-dots,blue

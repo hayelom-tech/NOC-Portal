@@ -1,0 +1,79 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2789 >>
+stream
+BT
+/F1 20 Tf
+50 750 Td
+(SOP-06) Tj
+ET
+BT
+/F2 15 Tf
+50 720 Td
+(Escalation Matrix) Tj
+ET
+BT /F1 9 Tf 50 700 Td
+(Department: NOC Operations — Escalation Management   |   Safaricom Ethiopia PLC   |   Version 2.1   |   2026) Tj
+ET
+50 692 m 545 692 l S
+BT /F2 11 Tf 50 675 Td (1. Purpose & Scope) Tj ET
+BT /F1 9 Tf 50 657 Td (Defines the tiered escalation pathway from L1 NOC Operator through L3 Vendor support) Tj ET
+BT /F1 9 Tf 50 644 Td (and executive management notification for all priority incidents.) Tj ET
+BT /F2 11 Tf 50 623 Td (2. L1 NOC Operator \(First Response\)) Tj ET
+BT /F1 9 Tf 60 605 Td (• Detects alarm, creates ticket, attempts initial restoration within MTCW.) Tj ET
+BT /F1 9 Tf 60 592 Td (• Responsibility: Alarm triage, initial isolation, subscriber impact assessment.) Tj ET
+BT /F1 9 Tf 60 579 Td (• Escalation Trigger: Severity P1/P2 or MTCW exceeded for P3/P4.) Tj ET
+BT /F2 11 Tf 50 558 Td (3. L2 Domain Engineers \(Technical Escalation\)) Tj ET
+BT /F1 9 Tf 60 540 Td (• RAN L2: Tewodros Mulugeta — +251 915 123 456) Tj ET
+BT /F1 9 Tf 60 527 Td (• Transmission L2: Dawit Tesfaye — +251 910 567 890) Tj ET
+BT /F1 9 Tf 60 514 Td (• PS Core L2: Amina Omar — +251 922 890 123) Tj ET
+BT /F1 9 Tf 60 501 Td (• CS Core L2: Yonas Alemu — +251 930 012 345) Tj ET
+BT /F1 9 Tf 60 488 Td (• Power L2: Kebede Assefa — +251 912 345 678) Tj ET
+BT /F1 9 Tf 60 475 Td (• Escalation Trigger: P1 unresolved >60 min, P2 unresolved >90 min.) Tj ET
+BT /F2 11 Tf 50 454 Td (4. L3 Vendor Support \(Expert Escalation\)) Tj ET
+BT /F1 9 Tf 60 436 Td (• Engage OEM TAC \(Technical Assistance Center\) via NOC bridge call.) Tj ET
+BT /F1 9 Tf 60 423 Td (• Provide: case ID, impact scope, logs, configuration snapshots.) Tj ET
+BT /F1 9 Tf 60 410 Td (• Escalation Trigger: L2 unable to resolve within agreed MTTR window.) Tj ET
+BT /F2 11 Tf 50 389 Td (5. Management Notification Thresholds) Tj ET
+BT /F1 9 Tf 60 371 Td (• P1 declared: Notify NOC Manager within 15 minutes.) Tj ET
+BT /F1 9 Tf 60 358 Td (• P1 unresolved >2 hours: Notify Head of Network Operations.) Tj ET
+BT /F1 9 Tf 60 345 Td (• P1 unresolved >4 hours: Notify VP Technology and CEO office.) Tj ET
+BT /F1 9 Tf 60 332 Td (• Any incident with subscriber impact >50,000: Immediate MD notification.) Tj ET
+BT /F2 11 Tf 50 311 Td (6. Escalation Communication Channels) Tj ET
+BT /F1 9 Tf 60 293 Td (• Primary: Dedicated NOC bridge conference line.) Tj ET
+BT /F1 9 Tf 60 280 Td (• Secondary: WhatsApp NOC Incident Group \(L1 + L2 + Management\).) Tj ET
+BT /F1 9 Tf 60 267 Td (• Formal: Email with incident report to noc@safaricom.et.) Tj ET
+BT /F1 9 Tf 60 254 Td (• War Room: Physical NOC Operations Room for P1 requiring on-site war room.) Tj ET
+BT /F1 8 Tf 50 30 Td (CONFIDENTIAL — For internal NOC use only. Safaricom Ethiopia PLC.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000254 00000 n 
+0000003095 00000 n 
+0000003165 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3240
+%%EOF

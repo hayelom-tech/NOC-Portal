@@ -1,0 +1,78 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2643 >>
+stream
+BT
+/F1 20 Tf
+50 750 Td
+(SOP-04) Tj
+ET
+BT
+/F2 15 Tf
+50 720 Td
+(Network Health Check Procedure) Tj
+ET
+BT /F1 9 Tf 50 700 Td
+(Department: NOC Operations — Monitoring Team   |   Safaricom Ethiopia PLC   |   Version 2.1   |   2026) Tj
+ET
+50 692 m 545 692 l S
+BT /F2 11 Tf 50 675 Td (1. Purpose & Scope) Tj ET
+BT /F1 9 Tf 50 657 Td (Defines the systematic health verification process conducted at each shift handover) Tj ET
+BT /F1 9 Tf 50 644 Td (to ensure full network visibility and baseline performance compliance.) Tj ET
+BT /F2 11 Tf 50 623 Td (2. Check Frequency) Tj ET
+BT /F1 9 Tf 60 605 Td (• Mandatory: At start of every shift \(06:00, 14:00, 22:00 EAT\).) Tj ET
+BT /F1 9 Tf 60 592 Td (• Optional spot checks: every 2 hours during active P1/P2 incidents.) Tj ET
+BT /F2 11 Tf 50 571 Td (3. RAN Health Checks) Tj ET
+BT /F1 9 Tf 60 553 Td (• Verify Cell Availability Rate \(CAR\) > 99.5% per region.) Tj ET
+BT /F1 9 Tf 60 540 Td (• Check Call Setup Success Rate \(CSSR\) > 98.5% nationwide.) Tj ET
+BT /F1 9 Tf 60 527 Td (• Confirm Drop Call Rate \(DCR\) < 0.5% on voice network.) Tj ET
+BT /F1 9 Tf 60 514 Td (• Review 4G/5G data throughput against baseline \(target: >90 Gbps\).) Tj ET
+BT /F2 11 Tf 50 493 Td (4. Transmission Health Checks) Tj ET
+BT /F1 9 Tf 60 475 Td (• Verify all microwave hop link utilization < 70% capacity.) Tj ET
+BT /F1 9 Tf 60 462 Td (• Confirm fiber route redundancy: no single points of failure.) Tj ET
+BT /F1 9 Tf 60 449 Td (• Check IP/MPLS routing table stability — no unexpected convergence.) Tj ET
+BT /F2 11 Tf 50 428 Td (5. Core Network Checks) Tj ET
+BT /F1 9 Tf 60 410 Td (• Verify MSC/MGW call processing load < 60% CPU utilization.) Tj ET
+BT /F1 9 Tf 60 397 Td (• Confirm SGSN/GGSN/P-GW PDP context activation success rate > 99%.) Tj ET
+BT /F1 9 Tf 60 384 Td (• Check HLR/HSS subscriber data replication is synchronized.) Tj ET
+BT /F2 11 Tf 50 363 Td (6. Power Systems Checks) Tj ET
+BT /F1 9 Tf 60 345 Td (• Confirm commercial power availability at all Category A sites.) Tj ET
+BT /F1 9 Tf 60 332 Td (• Verify generator fuel levels > 50% at all remote sites.) Tj ET
+BT /F1 9 Tf 60 319 Td (• Check UPS battery health — replace any battery bank < 80% capacity.) Tj ET
+BT /F2 11 Tf 50 298 Td (7. Reporting) Tj ET
+BT /F1 9 Tf 60 280 Td (• Complete health check checklist in NOC portal within 30 min of shift start.) Tj ET
+BT /F1 9 Tf 60 267 Td (• Escalate any metric below threshold to L2 domain engineer immediately.) Tj ET
+BT /F1 9 Tf 60 254 Td (• Include health check summary in shift handover documentation.) Tj ET
+BT /F1 8 Tf 50 30 Td (CONFIDENTIAL — For internal NOC use only. Safaricom Ethiopia PLC.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000254 00000 n 
+0000002949 00000 n 
+0000003019 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3094
+%%EOF

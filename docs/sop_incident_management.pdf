@@ -1,0 +1,79 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2855 >>
+stream
+BT
+/F1 20 Tf
+50 750 Td
+(SOP-01) Tj
+ET
+BT
+/F2 15 Tf
+50 720 Td
+(Incident Management Procedure) Tj
+ET
+BT /F1 9 Tf 50 700 Td
+(Department: NOC Operations   |   Safaricom Ethiopia PLC   |   Version 2.1   |   2026) Tj
+ET
+50 692 m 545 692 l S
+BT /F2 11 Tf 50 675 Td (1. Purpose & Scope) Tj ET
+BT /F1 9 Tf 50 657 Td (This document defines the end-to-end incident management lifecycle for the Safaricom Ethiopia) Tj ET
+BT /F1 9 Tf 50 644 Td (Network Operations Center \(NOC\). It governs all network events from initial alarm detection) Tj ET
+BT /F1 9 Tf 50 631 Td (through resolution, closure, and post-incident review.) Tj ET
+BT /F2 11 Tf 50 610 Td (2. Severity Classification) Tj ET
+BT /F1 9 Tf 60 592 Td (• P1 \(Critical\): Total service outage affecting >10,000 subscribers. MTTR target: 4 hours.) Tj ET
+BT /F1 9 Tf 60 579 Td (• P2 \(High\): Partial outage or >30% degradation. MTTR target: 5 hours.) Tj ET
+BT /F1 9 Tf 60 566 Td (• P3 \(Medium\): Single-site or isolated degradation. MTTR target: 8 hours.) Tj ET
+BT /F1 9 Tf 60 553 Td (• P4 \(Low\): Minor performance deviation, no subscriber impact. MTTR target: 12 hours.) Tj ET
+BT /F2 11 Tf 50 532 Td (3. Detection & Triage \(L1 NOC\)) Tj ET
+BT /F1 9 Tf 60 514 Td (• Monitor OSS/NMS dashboards continuously across all 7 regions.) Tj ET
+BT /F1 9 Tf 60 501 Td (• Log alarm in ticketing system within 5 minutes of detection.) Tj ET
+BT /F1 9 Tf 60 488 Td (• Assign severity level per classification table above.) Tj ET
+BT /F1 9 Tf 60 475 Td (• Initiate MTCT \(Mean Time to Call Team\) clock immediately.) Tj ET
+BT /F2 11 Tf 50 454 Td (4. Escalation Pathway) Tj ET
+BT /F1 9 Tf 60 436 Td (• P1/P2: Immediate escalation to L2 Domain Engineer on duty.) Tj ET
+BT /F1 9 Tf 60 423 Td (• P3/P4: L1 attempts resolution; escalate after MTCW threshold exceeded.) Tj ET
+BT /F1 9 Tf 60 410 Td (• L2 Domain Engineer engages L3 Vendor Support for unresolved P1/P2.) Tj ET
+BT /F1 9 Tf 60 397 Td (• Management notification mandatory for all P1 incidents within 15 minutes.) Tj ET
+BT /F2 11 Tf 50 376 Td (5. Resolution & Closure) Tj ET
+BT /F1 9 Tf 60 358 Td (• Verify full service restoration before closing ticket.) Tj ET
+BT /F1 9 Tf 60 345 Td (• Document root cause, resolution steps, and elapsed time.) Tj ET
+BT /F1 9 Tf 60 332 Td (• Complete post-incident report \(PIR\) within 24 hours for P1/P2.) Tj ET
+BT /F1 9 Tf 60 319 Td (• Conduct Lessons Learned session within 48 hours of P1 closure.) Tj ET
+BT /F2 11 Tf 50 298 Td (6. SLA Performance Targets) Tj ET
+BT /F1 9 Tf 60 280 Td (• MTCT \(Mean Time to Call Team\) — P1: 15 min, P2: 20 min.) Tj ET
+BT /F1 9 Tf 60 267 Td (• MTCW \(Mean Time to Clear Warning\) — P1: 30 min, P2: 45 min.) Tj ET
+BT /F1 9 Tf 60 254 Td (• MTTR \(Mean Time to Repair\) — P1: 240 min, P2: 300 min.) Tj ET
+BT /F1 8 Tf 50 30 Td (CONFIDENTIAL — For internal NOC use only. Safaricom Ethiopia PLC.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000254 00000 n 
+0000003161 00000 n 
+0000003231 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3306
+%%EOF

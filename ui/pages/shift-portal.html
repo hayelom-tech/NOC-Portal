@@ -1,0 +1,706 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOC Portal</title>
+    <script>
+        if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
+    </script>
+    <script>window.tailwind = window.tailwind || {}; tailwind.config = { darkMode: 'class' };</script>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        .knowledge-domain-nav {
+            max-height: 0;
+            margin-top: 0;
+            padding-top: 0;
+            padding-bottom: 0;
+            overflow: hidden;
+            opacity: 0;
+            transform: translateY(-10px) scale(0.98);
+            visibility: hidden;
+            pointer-events: none;
+            transition: max-height 420ms ease, margin 420ms ease, padding 420ms ease,
+                opacity 320ms ease, transform 420ms ease, visibility 0s linear 420ms;
+        }
+        .knowledge-domain-nav.is-expanded {
+            max-height: 16rem;
+            margin-top: 0.25rem;
+            padding-top: 0.25rem;
+            padding-bottom: 0.25rem;
+            opacity: 1;
+            transform: translateY(0) scale(1);
+            visibility: visible;
+            pointer-events: auto;
+            transition: max-height 420ms ease, margin 420ms ease, padding 420ms ease,
+                opacity 320ms ease, transform 420ms ease, visibility 0s;
+        }
+        .recent-knowledge-card {
+            display: flex;
+            min-height: 10rem;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 0.65rem;
+            border: 1px solid #263449;
+            border-radius: 0.75rem;
+            background: rgb(15 23 42 / 0.94);
+            padding: 0.9rem;
+            color: #f1f5f9;
+            text-align: left;
+            transition: border-color 160ms ease, transform 160ms ease, background-color 160ms ease;
+        }
+        .recent-knowledge-card:hover {
+            border-color: #38bdf8;
+            transform: translateY(-2px);
+        }
+        .domain-badge {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 9999px;
+            padding: 0.2rem 0.55rem;
+            font-size: 0.7rem;
+            font-weight: 600;
+            line-height: 1rem;
+        }
+        .domain-power { background: #fef3c7; color: #92400e; }
+        .domain-ran { background: #d1fae5; color: #065f46; }
+        .domain-tx { background: #ccfbf1; color: #115e59; }
+        .domain-core { background: #dbeafe; color: #1e40af; }
+        :root:not(.dark) .recent-knowledge-card {
+            border-color: #d6dde5;
+            background: rgb(255 255 255 / 0.94);
+            color: #0f172a;
+            box-shadow: 0 1px 3px rgb(15 23 42 / 0.08);
+        }
+        :root:not(.dark) .recent-knowledge-card:hover {
+            border-color: #0f766e;
+            background: #fff;
+        }
+        #portalHeader.knowledge-toolbar {
+            border-color: #e2e8f0;
+            border-radius: 0.75rem;
+            background: #fff;
+            box-shadow: 0 1px 2px rgb(15 23 42 / 0.08);
+        }
+        #portalHeader.knowledge-toolbar > div {
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 1rem;
+            padding: 0.5rem 0.75rem;
+        }
+        #portalHeader.knowledge-toolbar #portalSearchWrap {
+            max-width: none;
+        }
+        #portalHeader.knowledge-toolbar #portalSearchWrap > div {
+            border-color: #cbd5e1;
+            background: #fff;
+            padding-top: 0.5rem;
+            padding-bottom: 0.5rem;
+        }
+        #portalHeader.knowledge-toolbar #portalSearch {
+            color: #0f172a;
+        }
+        #portalHeader.knowledge-toolbar #portalSearchWrap .fa-magnifying-glass {
+            color: #64748b;
+        }
+        #portalHeader.knowledge-toolbar #portalSearch::placeholder {
+            color: #64748b;
+        }
+        #portalHeader.knowledge-toolbar #portalSearchWrap kbd {
+            display: none;
+        }
+        #portalHeader.knowledge-toolbar #userMenuButton {
+            padding: 0;
+            border: 0;
+        }
+        #portalHeader.knowledge-toolbar #userAvatar {
+            height: 2rem;
+            width: 2rem;
+            background: #e2e8f0;
+            color: #475569;
+        }
+        #portalHeader.knowledge-toolbar #userMenuButton { gap: .6rem; padding: .15rem .5rem .15rem .15rem; }
+        #portalHeader.knowledge-toolbar #userDetails { display: grid; text-align: left; line-height: 1.15; }
+        #portalHeader.knowledge-toolbar #userLabel { font-size: .75rem; font-weight: 600; }
+        #portalHeader.knowledge-toolbar #userEmail { font-size: .65rem; color: #64748b; }
+        #portalHeader.knowledge-toolbar #themeToggle,
+        #portalHeader.knowledge-toolbar #notificationButton,
+        #portalHeader.knowledge-toolbar #userMenuButton {
+            border-color: #cbd5e1;
+            background: #fff;
+            color: #334155;
+        }
+        :root.dark #portalHeader.knowledge-toolbar {
+            border-color: #1e293b;
+            background: #0f172a;
+            box-shadow: 0 1px 2px rgb(0 0 0 / 0.25);
+        }
+        :root.dark #portalHeader.knowledge-toolbar #portalSearchWrap > div {
+            border-color: #334155;
+            background: #020617;
+        }
+        :root.dark #portalHeader.knowledge-toolbar #portalSearch,
+        :root.dark #portalHeader.knowledge-toolbar #themeToggle,
+        :root.dark #portalHeader.knowledge-toolbar #notificationButton,
+        :root.dark #portalHeader.knowledge-toolbar #userMenuButton {
+            color: #f8fafc;
+        }
+        :root.dark #portalHeader.knowledge-toolbar #portalSearch::placeholder,
+        :root.dark #portalHeader.knowledge-toolbar #portalSearchWrap .fa-magnifying-glass {
+            color: #94a3b8;
+        }
+        :root.dark #portalHeader.knowledge-toolbar #themeToggle,
+        :root.dark #portalHeader.knowledge-toolbar #notificationButton,
+        :root.dark #portalHeader.knowledge-toolbar #userMenuButton {
+            border-color: #334155;
+            background: #0f172a;
+        }
+        :root.dark #portalHeader.knowledge-toolbar #userAvatar {
+            background: #334155;
+            color: #f8fafc;
+        }
+
+        /* The page uses fixed slate utilities in several sections; map those to
+           the light palette when the root dark-mode class is off. */
+        :root:not(.dark) [class~="bg-slate-950"] { background-color: #f8fafc !important; }
+        :root:not(.dark) [class~="bg-slate-900"] { background-color: #fff !important; }
+        :root:not(.dark) [class~="bg-slate-800"] { background-color: #f1f5f9 !important; }
+        :root:not(.dark) [class~="bg-slate-700"] { background-color: #e2e8f0 !important; }
+        :root:not(.dark) [class~="border-slate-800"] { border-color: #e2e8f0 !important; }
+        :root:not(.dark) [class~="border-slate-700"] { border-color: #cbd5e1 !important; }
+        :root:not(.dark) [class~="text-slate-100"] { color: #0f172a !important; }
+        :root:not(.dark) [class~="text-slate-200"] { color: #1e293b !important; }
+        :root:not(.dark) [class~="text-slate-300"] { color: #1e293b !important; }
+        :root:not(.dark) [class~="text-slate-400"] { color: #334155 !important; }
+        :root:not(.dark) [class~="text-slate-500"] { color: #475569 !important; }
+        :root:not(.dark) [class~="placeholder:text-slate-500"]::placeholder { color: #64748b !important; }
+        :root:not(.dark) input:not([type="checkbox"]):not([type="radio"]),
+        :root:not(.dark) select,
+        :root:not(.dark) textarea { color: #0f172a !important; }
+        :root:not(.dark) input::placeholder,
+        :root:not(.dark) textarea::placeholder { color: #64748b; }
+        :root:not(.dark) #portalSearch { color: #0f172a !important; }
+        :root:not(.dark) #portalSearchResults { color: #0f172a; }
+        :root:not(.dark) #portalHeader:not(.knowledge-toolbar) {
+            border-color: #e2e8f0;
+            background: #fff;
+            color: #0f172a;
+        }
+        :root:not(.dark) #portalSearchWrap > div {
+            border-color: #cbd5e1;
+            background: #fff;
+        }
+        :root:not(.dark) #userMenu { color: #0f172a; }
+        #passwordDialog { max-height: calc(100dvh - 2rem); overflow-y: auto; }
+        #passwordDialog::backdrop { background: rgb(15 23 42 / 0.58); backdrop-filter: blur(3px); }
+        #passwordDialog .password-input {
+            width: 100%; border: 1.5px solid #cbd5e1; border-radius: 0.8rem; background: #fff;
+            color: #171717; padding: .9rem 3rem .9rem 1rem; outline: none; transition: border-color .15s, box-shadow .15s;
+        }
+        #passwordDialog .password-input:focus { border-color: #3284f5; box-shadow: 0 0 0 3px rgb(50 132 245 / .14); }
+        #passwordDialog .password-input[data-state="valid"] { border-color: #16a34a; }
+        #passwordDialog .password-input[data-state="invalid"] { border-color: #ef3340; }
+        :root.dark #passwordDialog .password-input { background: #020617; color: #f8fafc; border-color: #475569; }
+        #passwordDialog .password-rule { color: #94a3b8; }
+        #passwordDialog .password-rule::before { content: ''; display: inline-block; width: .5rem; height: .5rem; margin-right: .55rem; border-radius: 50%; background: #a3a3a3; }
+        #passwordDialog .password-rule[data-met="true"] { color: #16a34a; }
+        #passwordDialog .password-rule[data-met="true"]::before { background: #16a34a; }
+        #passwordDialog .password-rule[data-met="false"][data-touched="true"] { color: #ef3340; }
+        #passwordDialog .password-rule[data-met="false"][data-touched="true"]::before { background: #ef3340; }
+        #passwordDialog .password-toggle { position: absolute; right: .9rem; top: 50%; transform: translateY(-50%); color: #475569; padding: .25rem; }
+        :root.dark #passwordDialog .password-toggle { color: #cbd5e1; }
+        #passwordDialog .password-submit:disabled { opacity: .55; cursor: not-allowed; }
+        #processDocumentUploadForm.hidden { display: none !important; }
+        :root:not(.dark) nav[role="tablist"] {
+            border-color: transparent !important;
+            background: transparent !important;
+            box-shadow: none !important;
+            font-family: "Segoe UI", Arial, sans-serif;
+        }
+        :root:not(.dark) #portalSidebar {
+            border: 1px solid rgb(74 222 128 / 0.55);
+            border-radius: 1rem;
+            background: rgb(220 252 231 / 0.92);
+            padding: 0.5rem;
+            backdrop-filter: blur(8px);
+        }
+        :root:not(.dark) #knowledgeDomainNav.is-expanded {
+            background: transparent;
+            border-color: #86efac !important;
+        }
+        :root:not(.dark) nav[role="tablist"] .nav-btn {
+            min-height: 2.5rem;
+            color: #243449 !important;
+            font-size: 0.875rem;
+            font-weight: 500;
+            line-height: 1.25rem;
+        }
+        :root:not(.dark) nav[role="tablist"] .nav-btn[aria-selected="true"] {
+            background: #bbf7d0 !important;
+            color: #14532d !important;
+            box-shadow: none !important;
+            font-weight: 600;
+        }
+        :root:not(.dark) nav[role="tablist"] .nav-btn:not([aria-selected="true"]):hover {
+            background: #dcfce7 !important;
+            color: #14532d !important;
+        }
+        :root:not(.dark) #knowledgeDomainNav.is-expanded {
+            max-height: 20rem;
+            opacity: 1;
+            visibility: visible;
+            pointer-events: auto;
+            margin-top: 0.25rem;
+            padding: 0.5rem 0 0.5rem 0.75rem;
+            border-radius: 0 0.75rem 0.75rem 0;
+            background: rgb(240 253 244 / 0.72);
+        }
+        :root:not(.dark) #knowledgeDomainNav button { color: #1e293b !important; }
+        :root:not(.dark) #knowledgeDomainNav button[aria-current="page"] {
+            background: #bbf7d0 !important;
+            color: #14532d !important;
+            font-weight: 600;
+        }
+        :root:not(.dark) #knowledgeDomainNav button:hover {
+            background-color: #e2e8f0 !important;
+            color: #0f172a !important;
+        }
+        :root:not(.dark) #knowledgeDomainNav { border-color: #cbd5e1 !important; }
+        :root:not(.dark) .nav-btn:not([aria-selected="true"]):hover,
+        :root:not(.dark) [data-knowledge-domain]:hover,
+        :root:not(.dark) [class~="hover:bg-slate-800"]:hover,
+        :root:not(.dark) [class~="hover:bg-slate-700/50"]:hover { background-color: #e2e8f0 !important; }
+        :root:not(.dark) .nav-btn:not([aria-selected="true"]):hover,
+        :root:not(.dark) [data-knowledge-domain]:hover { color: #0f172a !important; }
+        body {
+            background-image: linear-gradient(rgb(248 250 252 / 0.80), rgb(248 250 252 / 0.80)),
+                url("/assets/safaricom-background.jpg");
+            background-position: center;
+            background-size: cover;
+            background-attachment: fixed;
+        }
+        :root.dark body {
+            background-image: linear-gradient(rgb(2 6 23 / 0.90), rgb(2 6 23 / 0.90)),
+                url("/assets/safaricom-background.jpg");
+        }
+        :root:not(.dark) [class~="bg-slate-950"] { background-color: rgb(248 250 252 / 0.88) !important; }
+        :root:not(.dark) [class~="bg-slate-900"] { background-color: rgb(255 255 255 / 0.88) !important; }
+        :root:not(.dark) [class~="bg-slate-800"] { background-color: rgb(241 245 249 / 0.88) !important; }
+        :root:not(.dark) #homeCurrentDate,
+        :root:not(.dark) #homePowerDate,
+        :root:not(.dark) #homeTxDate {
+            background-color: #dcfce7 !important;
+            border-color: #86efac !important;
+            color: #166534 !important;
+        }
+        :root:not(.dark) #homeCurrentShift,
+        :root:not(.dark) #homePowerShift {
+            background-color: #fef3c7 !important;
+            border-color: #fcd34d !important;
+            color: #92400e !important;
+        }
+        :root:not(.dark) #homeTxShift {
+            background-color: #e0f2fe !important;
+            border-color: #7dd3fc !important;
+            color: #075985 !important;
+        }
+        :root:not(.dark) #handoverShiftLabel {
+            background-color: #e0f2fe !important;
+            border-color: #7dd3fc !important;
+            color: #075985 !important;
+        }
+        :root:not(.dark) #nextShiftDisplay {
+            background-color: #e0f2fe !important;
+            border-color: #7dd3fc !important;
+            color: #075985 !important;
+        }
+        @media (prefers-reduced-motion: reduce) {
+            .knowledge-domain-nav,
+            .knowledge-domain-nav.is-expanded {
+                transition: none;
+            }
+        }
+    </style>
+</head>
+<body class="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
+    <div id="toast" class="pointer-events-none fixed right-6 top-6 z-[100] hidden rounded-xl border px-4 py-3 text-sm shadow-2xl"></div>
+    <div class="mx-auto flex max-w-[1600px] flex-col gap-5 px-4 py-6 lg:flex-row">
+        <aside id="portalSidebar" class="w-full shrink-0 lg:w-60">
+            <nav role="tablist" aria-label="Portal sections" class="flex gap-1 overflow-x-auto rounded-2xl border border-slate-700/50 bg-slate-800 p-2 shadow-xl lg:flex-col">
+                <button id="homeTab" type="button" role="tab" aria-selected="true" aria-controls="homePanel" data-tab="home" class="nav-btn rounded-xl bg-emerald-600 px-4 py-3 text-left text-sm font-bold text-white whitespace-nowrap shadow-md">Home</button>
+                <button id="handoverTab" type="button" role="tab" aria-selected="false" aria-controls="handoverPanel" data-tab="handover" class="nav-btn rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">Shift Handover</button>
+                <button id="l2Tab" type="button" role="tab" aria-selected="false" aria-controls="l2Panel" data-tab="l2" class="nav-btn rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">L2 Support</button>
+                <button id="processTab" type="button" role="tab" aria-selected="false" aria-controls="processPanel" data-tab="process" class="nav-btn rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">NOC Process</button>
+                <button id="knowledgeTab" type="button" role="tab" aria-selected="false" aria-expanded="false" aria-controls="knowledgePanel knowledgeDomainNav" data-tab="knowledge" class="nav-btn flex items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">
+                    <span class="flex items-center gap-3"><i class="fa-solid fa-book-open w-5 text-center"></i>Knowledge Hub</span>
+                    <i id="knowledgeChevron" class="fa-solid fa-chevron-down text-xs transition-transform"></i>
+                </button>
+            </nav>
+            <div id="knowledgeDomainNav" aria-hidden="true" class="knowledge-domain-nav mt-1 space-y-1 border-l border-slate-700 py-1 pl-3 lg:ml-4">
+                <button type="button" data-knowledge-domain="power" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-bolt w-4 text-center text-amber-400"></i>Power</button>
+                <button type="button" data-knowledge-domain="ran" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-tower-cell w-4 text-center text-emerald-400"></i>RAN</button>
+                <button type="button" data-knowledge-domain="tx" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-route w-4 text-center text-blue-400"></i>TX</button>
+                <button type="button" data-knowledge-domain="core" class="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm text-slate-300 transition hover:bg-slate-800 hover:text-white"><i class="fa-solid fa-server w-4 text-center text-indigo-400"></i>Core</button>
+            </div>
+        </aside>
+        <div class="min-w-0 flex-1">
+    <header id="portalHeader" class="rounded-2xl border border-slate-800 bg-slate-900 shadow-xl">
+        <div class="flex flex-wrap items-center justify-between gap-4 px-5 py-4">
+            <div id="portalHeading">
+                <h1 id="portalSectionTitle" class="text-xl font-bold">Home</h1>
+            </div>
+            <div id="portalSearchWrap" class="relative min-w-56 flex-1 max-w-xl">
+                <label for="portalSearch" class="sr-only">Search portal</label>
+                <div class="flex items-center gap-2 rounded-lg border border-slate-700 bg-slate-950 px-3 py-2.5 focus-within:border-sky-500">
+                    <i class="fa-solid fa-magnifying-glass text-slate-400"></i>
+                    <input id="portalSearch" type="search" autocomplete="off" placeholder="Search..." class="w-full bg-transparent text-sm text-white outline-none placeholder:text-slate-500">
+                    <kbd class="hidden rounded border border-slate-700 px-1.5 py-0.5 text-[10px] text-slate-500 sm:inline">Search</kbd>
+                </div>
+                <div id="portalSearchResults" role="listbox" aria-label="Portal search results" class="absolute left-0 right-0 top-full z-40 mt-2 hidden max-h-96 overflow-y-auto rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-2xl"></div>
+            </div>
+            <div class="relative flex items-center gap-3">
+                <button id="themeToggle" type="button" aria-label="Enable night mode" title="Enable night mode" aria-pressed="true" class="rounded-full border border-slate-700 p-2 text-sm hover:bg-slate-800">
+                    <i class="fa-solid fa-moon"></i>
+                </button>
+                <div id="notificationControl" class="relative hidden">
+                    <button id="notificationButton" type="button" aria-label="Notifications" aria-expanded="false" aria-controls="notificationMenu" class="relative rounded-full border border-slate-700 p-2 text-sm hover:bg-slate-800">
+                        <i class="fa-solid fa-bell"></i>
+                        <span id="notificationBadge" class="absolute -right-1 -top-1 hidden min-w-4 rounded-full bg-red-600 px-1 text-[10px] font-bold leading-4 text-white"></span>
+                    </button>
+                    <div id="notificationMenu" class="absolute right-0 top-full z-50 mt-2 hidden w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-2xl">
+                        <div class="border-b border-slate-800 px-3 py-2 text-sm font-semibold">Notifications</div>
+                        <div id="notificationList" class="max-h-80 space-y-1 overflow-y-auto p-1"></div>
+                    </div>
+                </div>
+                <button id="userMenuButton" type="button" aria-expanded="false" aria-controls="userMenu" class="flex items-center gap-2 rounded-full border border-slate-700 bg-slate-900 py-1 pl-1 pr-3 text-sm hover:bg-slate-800">
+                    <span id="userAvatar" class="flex h-8 w-8 items-center justify-center rounded-full bg-slate-700 text-xs font-bold text-white">?</span>
+                    <span id="userDetails" class="grid text-left leading-tight"><span id="userLabel" class="text-slate-200"></span><span id="userEmail" class="text-xs text-slate-400"></span></span>
+                    <i class="fa-solid fa-chevron-down text-xs text-slate-400"></i>
+                </button>
+
+                <div id="userMenu" class="absolute right-0 top-full z-50 mt-2 hidden w-64 rounded-xl border border-slate-700 bg-slate-900 p-2 shadow-2xl">
+                    <div class="border-b border-slate-800 px-3 py-2">
+                        <p id="menuFullName" class="text-sm font-semibold"></p>
+                        <p id="menuRole" class="text-xs text-slate-400"></p>
+                    </div>
+
+                    <div class="px-3 py-3">
+                        <p class="mb-2 text-xs font-semibold uppercase text-slate-500">Profile color</p>
+                        <div id="avatarPicker" class="flex flex-wrap gap-2"></div>
+                    </div>
+
+                    <hr class="border-slate-800">
+
+                    <button type="button" data-menu-action="password" class="mt-1 block w-full rounded px-3 py-2 text-left text-sm hover:bg-slate-800">
+                        <i class="fa-solid fa-key mr-2 w-4"></i> Change password
+                    </button>
+
+                    <div id="adminMenuItems" class="hidden">
+                        <button type="button" data-menu-action="add-user" class="hidden block w-full rounded px-3 py-2 text-left text-sm hover:bg-slate-800">
+                            <i class="fa-solid fa-user-plus mr-2 w-4"></i> Add user
+                        </button>
+                        <a id="manageUsersLink" href="/admin.html" class="hidden block rounded px-3 py-2 text-left text-sm hover:bg-slate-800">
+                            <i class="fa-solid fa-users-gear mr-2 w-4"></i> Manage users
+                        </a>
+                        <a id="uploadRosterLink" href="/admin.html" class="hidden block rounded px-3 py-2 text-left text-sm hover:bg-slate-800">
+                            <i class="fa-solid fa-file-arrow-up mr-2 w-4"></i> Upload roster
+                        </a>
+                    </div>
+
+                    <hr class="border-slate-800">
+
+                    <button type="button" data-menu-action="logout" class="mt-1 block w-full rounded px-3 py-2 text-left text-sm text-red-400 hover:bg-slate-800">
+                        <i class="fa-solid fa-arrow-right-from-bracket mr-2 w-4"></i> Sign out
+                    </button>
+                </div>
+            </div>
+        </div>
+    </header>
+    <main class="space-y-6 py-6">
+        <div id="homePanel" role="tabpanel" aria-labelledby="homeTab" data-tab-panel="home" class="space-y-6">
+            <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <input id="shiftDate" type="date" class="hidden" aria-hidden="true" tabindex="-1">
+                <select id="shiftSelect" class="hidden" aria-hidden="true" tabindex="-1"></select>
+                <div class="flex items-center justify-between gap-3">
+                    <span id="homeCurrentDate" class="rounded-lg border border-emerald-400/30 bg-emerald-500/15 px-4 py-2 text-sm font-semibold text-emerald-200">Date: --</span>
+                    <span id="homeCurrentShift" class="rounded-lg border border-sky-400/30 bg-sky-500/15 px-4 py-2 text-sm font-semibold text-sky-200">Shift: --</span>
+                </div>
+                <div class="mt-3 flex flex-wrap items-center justify-between gap-3">
+                    <p id="status" class="text-xs text-slate-400" role="status"></p>
+                    <p id="previousChallenges" class="rounded-lg bg-slate-950 px-3 py-2 text-sm text-slate-400" role="status">Previous shift challenges: --</p>
+                </div>
+            </section>
+            <section class="grid items-start gap-4 lg:grid-cols-2" aria-label="Power and TX shift coverage">
+                <article class="rounded-2xl border border-amber-900/60 bg-gradient-to-br from-amber-950/50 to-slate-900 p-5 shadow-lg shadow-black/10">
+                    <div class="mb-4 flex items-center gap-3">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-900/50 text-amber-300"><i class="fa-solid fa-bolt"></i></span>
+                        <div><h2 class="font-semibold text-slate-100">Power on shift</h2><p class="text-xs text-slate-400">Front Office coverage</p></div>
+                    </div>
+                    <div class="mb-3 flex items-center justify-between gap-3 text-xs">
+                        <span id="homePowerDate" class="rounded-lg border border-emerald-400/30 bg-emerald-500/15 px-3 py-2 font-semibold text-emerald-200">Date: —</span>
+                        <span id="homePowerShift" class="rounded-lg border border-amber-400/30 bg-amber-500/15 px-3 py-2 font-semibold text-amber-200">Shift: —</span>
+                    </div>
+                    <div id="homePowerPeople" class="space-y-2 text-sm text-slate-200"><p class="text-slate-400">Loading current shift coverage…</p></div>
+                </article>
+                <article class="rounded-2xl border border-sky-900/60 bg-gradient-to-br from-sky-950/45 to-slate-900 p-5 shadow-lg shadow-black/10">
+                    <div class="mb-4 flex items-center gap-3">
+                        <span class="flex h-11 w-11 items-center justify-center rounded-xl bg-sky-900/50 text-sky-300"><i class="fa-solid fa-route"></i></span>
+                        <div><h2 class="font-semibold text-slate-100">TX on shift</h2><p class="text-xs text-slate-400">Front Office coverage</p></div>
+                    </div>
+                    <div class="mb-3 flex items-center justify-between gap-3 text-xs">
+                        <span id="homeTxDate" class="rounded-lg border border-emerald-400/30 bg-emerald-500/15 px-3 py-2 font-semibold text-emerald-200">Date: —</span>
+                        <span id="homeTxShift" class="rounded-lg border border-sky-400/30 bg-sky-500/15 px-3 py-2 font-semibold text-sky-200">Shift: —</span>
+                    </div>
+                    <div id="homeTxPeople" class="space-y-2 text-sm text-slate-200"><p class="text-slate-400">Loading current shift coverage…</p></div>
+                </article>
+            </section>
+            <section id="previousShiftSection" class="hidden rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                    <h2 class="text-lg font-semibold">Previous Shift Details</h2>
+                    <span id="previousShiftLabel" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2 text-sm text-slate-300">Loading previous shift...</span>
+                </div>
+                <div id="previousShiftDetails" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-3" aria-live="polite">
+                    <p class="text-sm text-slate-400">Loading previous shift details...</p>
+                </div>
+            </section>
+        </div>
+
+        <div id="l2Panel" role="tabpanel" aria-labelledby="l2Tab" data-tab-panel="l2" hidden>
+        <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <h2 class="mb-4 text-lg font-semibold">Monthly L2 on-call contacts</h2>
+            <h3 class="mb-3 border-t border-slate-800 pt-5 text-lg font-semibold">Contacts grouped by domain</h3>
+            <div id="l2Groups" class="grid items-start gap-4 md:grid-cols-2 xl:grid-cols-3"></div>
+        </section>
+        </div>
+
+        <div id="handoverPanel" role="tabpanel" aria-labelledby="handoverTab" data-tab-panel="handover" hidden>
+        <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <div id="handoverContent" class="grid gap-4 md:grid-cols-2"></div>
+            <form id="handoverForm" class="mt-4 hidden space-y-4">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                    <h3 class="text-lg font-semibold">Complete shift handover</h3>
+                    <p class="mt-1 text-sm text-slate-400">Record the challenges, live network activity, teams, incidents, and regional maintenance for the next shift.</p>
+                    </div>
+                    <span id="handoverShiftLabel" class="rounded-lg border border-sky-400/30 bg-sky-500/15 px-3 py-2 text-sm font-semibold text-sky-200">Loading shift…</span>
+                </div>
+                <div class="grid gap-4 xl:grid-cols-2">
+                    <section class="space-y-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                        <h4 class="font-semibold">1. Next shift and operational challenges</h4>
+                        <label class="grid gap-1 text-sm">Next shift (set automatically)
+                            <span id="nextShiftDisplay" class="rounded-lg border border-sky-400/30 bg-sky-500/15 px-3 py-2 font-semibold text-sky-200">--</span>
+                            <select id="nextShift" class="hidden" aria-hidden="true" tabindex="-1"></select>
+                        </label>
+                        <fieldset class="space-y-2">
+                            <legend class="text-sm">Are there operational challenges the next shift needs to know?</legend>
+                            <label class="mr-4 inline-flex items-center gap-2 text-sm"><input id="challengeNo" type="radio" name="challengeChoice" value="no" checked> No</label>
+                            <label class="inline-flex items-center gap-2 text-sm"><input id="challengeYes" type="radio" name="challengeChoice" value="yes"> Yes</label>
+                            <input id="challenges" type="checkbox" class="hidden" aria-hidden="true" tabindex="-1">
+                        </fieldset>
+                        <div id="challengeDetails" class="hidden">
+                            <label class="mb-3 grid gap-1 text-sm">Challenge domain
+                                <select id="challengeDomain" class="rounded bg-slate-950 px-3 py-2">
+                                    <option value="">Choose a domain</option>
+                                    <option value="power">Power</option>
+                                    <option value="tx">Transmission</option>
+                                </select>
+                            </label>
+                            <label class="grid gap-1 text-sm">Describe the challenges for the next shift
+                                <textarea id="nextUpdate" rows="3" class="w-full rounded bg-slate-950 px-3 py-2"></textarea>
+                            </label>
+                        </div>
+                    </section>
+                    <section id="liveNetworkActivity" class="hidden space-y-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4">
+                        <h4 class="font-semibold">2. Live network activity</h4>
+                        <label class="grid gap-1 text-sm">Active change requests (CR)
+                            <textarea id="changeRequests" rows="3" placeholder="CR ID, network/site, impact, and owner" class="rounded bg-slate-950 px-3 py-2"></textarea>
+                        </label>
+                        <label class="grid gap-1 text-sm">Planned maintenance (PM)
+                            <textarea id="maintenance" rows="3" placeholder="PM activity and execution window" class="rounded bg-slate-950 px-3 py-2"></textarea>
+                        </label>
+                    </section>
+                    <section class="space-y-3 rounded-xl border border-slate-800 bg-slate-950/40 p-4 xl:col-span-2">
+                        <h4 class="font-semibold">3. Active field teams on site</h4>
+                        <div id="fieldTeamsEditor" class="space-y-2"></div>
+                        <button id="addFieldTeamButton" type="button" class="rounded bg-slate-700 px-3 py-2 text-xs">+ Add team</button>
+                        <p class="text-xs text-slate-500">Up to 6 teams. Enter a site ID (1-6 digits), team member name, and phone number (+251 followed by 9 digits).</p>
+                    </section>
+                    <section class="space-y-4 rounded-xl border border-slate-800 bg-slate-950/40 p-4 xl:col-span-2">
+                        <h4 class="font-semibold">4. Major incident and ticket status</h4>
+                        <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
+                            <label class="grid gap-1 text-sm">Major incidents during shift<input id="majorIncidents" type="number" min="0" max="50" class="rounded bg-slate-950 px-3 py-2"></label>
+                            <label class="grid gap-1 text-sm">Resolved major incidents<input id="resolvedIncidents" type="number" min="0" max="50" class="rounded bg-slate-950 px-3 py-2"></label>
+                            <label class="grid gap-1 text-sm">Alarms pending resolution<input id="pendingAlarms" type="number" min="0" max="50" class="rounded bg-slate-950 px-3 py-2"></label>
+                            <label class="grid gap-1 text-sm">Closed trouble tickets<input id="closedTickets" type="number" min="0" max="50" class="rounded bg-slate-950 px-3 py-2"></label>
+                        </div>
+                    </section>
+                    <section class="space-y-3 rounded-xl border border-slate-800 bg-slate-950/40 p-4 xl:col-span-2">
+                        <h4 class="font-semibold">5. Corrective maintenance by region</h4>
+                        <div class="grid grid-cols-[1fr_1fr_2fr] gap-2 px-1 text-xs text-slate-400"><span>Region</span><span>Maintenance count (0-50)</span><span>Notes</span></div>
+                        <div id="regionEditor" class="space-y-2"></div>
+                    </section>
+                    <label class="grid gap-1 text-sm xl:col-span-2">Archived handover record index
+                        <input id="archiveIndex" class="rounded bg-slate-950 px-3 py-2">
+                    </label>
+                </div>
+                <button class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold">Save handover</button>
+            </form>
+        </section>
+        </div>
+
+        <div id="processPanel" role="tabpanel" aria-labelledby="processTab" data-tab-panel="process" hidden>
+        <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
+                <div>
+                    <h2 class="text-lg font-semibold">NOC Process &amp; Reference Documents</h2>
+                    <p class="mt-1 text-sm text-slate-400">Processes, laws, policies, and other documents for NOC staff.</p>
+                </div>
+                <button id="uploadProcessDocumentButton" type="button" class="hidden rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white hover:bg-emerald-600">
+                    <i class="fa-solid fa-upload mr-2"></i>Upload document
+                </button>
+            </div>
+            <form id="processDocumentUploadForm" action="/api/v1/process-documents" method="post" enctype="multipart/form-data" class="mb-6 hidden grid gap-3 rounded-xl border border-slate-700 bg-slate-950/50 p-4">
+                <h3 class="font-semibold">Publish a NOC reference document</h3>
+                <input name="title" maxlength="200" placeholder="Document title (optional; defaults to the file name)" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2">
+                <textarea name="description" maxlength="4000" rows="2" placeholder="Short description (optional)" class="rounded-lg border border-slate-700 bg-slate-950 px-3 py-2"></textarea>
+                <label class="grid gap-2 text-sm text-slate-300">Choose a file (PDF, Word, Excel, PowerPoint, TXT, or CSV; max 10 MB)
+                    <input name="file" type="file" aria-required="true" accept=".pdf,.doc,.docx,.odt,.rtf,.xls,.xlsx,.ppt,.pptx,.txt,.csv" class="rounded-lg border border-slate-700 bg-slate-950 p-2 text-sm file:mr-3 file:rounded file:border-0 file:bg-slate-700 file:px-3 file:py-1.5 file:text-white">
+                </label>
+                <p id="processDocumentUploadStatus" role="status" aria-live="polite" class="hidden text-sm"></p>
+                <div class="flex flex-wrap gap-2">
+                    <button type="submit" class="rounded-lg bg-emerald-700 px-4 py-2 text-sm font-semibold text-white">Publish document</button>
+                    <button type="button" id="cancelProcessDocumentUpload" class="rounded-lg bg-slate-700 px-4 py-2 text-sm">Cancel</button>
+                </div>
+            </form>
+            <div id="processList" class="grid gap-4 sm:grid-cols-2 xl:grid-cols-3" aria-live="polite"></div>
+        </section>
+        </div>
+
+                        <!-- KNOWLEDGE DASHBOARD -->
+                <div id="knowledgePanel" role="tabpanel" aria-labelledby="knowledgeTab" data-tab-panel="knowledge" class="space-y-6">
+                    <div id="knowledgeDashboardView" class="space-y-6">
+                    
+                    <!-- Hero Banner -->
+                    <div class="flex flex-wrap items-center justify-between gap-4 rounded-xl bg-gradient-to-r from-teal-800 to-emerald-700 p-6 text-white shadow-lg">
+                        <div>
+                            <h2 class="text-2xl font-bold">Welcome, Expert. Share and Learn.</h2>
+                            <p class="mt-1 text-emerald-100 text-sm">Browse the latest insights and top contributors.</p>
+                        </div>
+                        <button id="createKnowledgePostButton" type="button" class="create-post-trigger hidden rounded-lg bg-white px-4 py-2.5 text-sm font-semibold text-emerald-900 shadow-md transition hover:bg-emerald-50">
+                            <i class="fa-solid fa-plus mr-2"></i>Create Post
+                        </button>
+                    </div>
+
+                    <!-- Admin Pending Approvals -->
+                    <div id="adminApprovalSection" class="hidden rounded-xl border border-amber-200 bg-amber-50 p-5 dark:border-amber-900/50 dark:bg-amber-950/30">
+                        <h3 class="mb-4 text-lg font-bold text-amber-900 dark:text-amber-500"><i class="fa-solid fa-clock mr-2"></i> Pending Approvals</h3>
+                        <div id="pendingPostsList" class="space-y-3"></div>
+                    </div>
+
+                    <section aria-labelledby="recentKnowledgeHeading">
+                        <div class="mb-3 flex items-center justify-between gap-3">
+                            <h3 id="recentKnowledgeHeading" class="text-lg font-semibold">Recent Expert Insights (Incident/Scenario)</h3>
+                            <button type="button" data-view-all-knowledge class="text-xs font-medium text-sky-700 hover:underline dark:text-sky-300">View All</button>
+                        </div>
+                        <div class="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+                            <button id="recent-post-power" type="button" data-recent-domain="power" class="recent-knowledge-card" aria-label="Open recent Power article"><span class="domain-badge domain-power">Power</span></button>
+                            <button id="recent-post-ran" type="button" data-recent-domain="ran" class="recent-knowledge-card" aria-label="Open recent RAN article"><span class="domain-badge domain-ran">RAN</span></button>
+                            <button id="recent-post-tx" type="button" data-recent-domain="tx" class="recent-knowledge-card" aria-label="Open recent TX article"><span class="domain-badge domain-tx">TX</span></button>
+                            <button id="recent-post-core" type="button" data-recent-domain="core" class="recent-knowledge-card" aria-label="Open recent Core article"><span class="domain-badge domain-core">Core</span></button>
+                        </div>
+                    </section>
+
+                    <!-- Top Contributors (Global) -->
+                    <section class="mt-8">
+                        <h3 class="mb-4 text-lg font-bold">Top Contributors</h3>
+                        <div id="contributorsGrid" class="grid gap-4 sm:grid-cols-2 md:grid-cols-4"></div>
+                    </section>
+                    </div>
+
+                    <section id="knowledgePostsView" class="hidden rounded-xl border border-slate-800 bg-slate-900 p-5">
+                        <div class="mb-4 flex flex-wrap items-center justify-between gap-3">
+                            <div>
+                                <h3 id="knowledgePostsHeading" class="text-lg font-semibold">Knowledge Articles</h3>
+                                <p id="knowledgePostsDescription" class="mt-1 text-sm text-slate-400">Browse published posts from the Knowledge Hub.</p>
+                            </div>
+                            <button id="backToKnowledgeDashboard" type="button" class="rounded-lg border border-slate-700 px-3 py-2 text-sm hover:bg-slate-800">
+                                <i class="fa-solid fa-arrow-left mr-2"></i>Back to dashboard
+                            </button>
+                        </div>
+                        <div id="knowledgeList" class="space-y-3"></div>
+                        <form id="knowledgeForm" class="mt-4 hidden grid gap-3 border-t border-slate-800 pt-4">
+                            <h4 class="font-semibold">Add or edit a knowledge article</h4>
+                            <input name="id" type="hidden">
+                            <input name="expected_updated_at" type="hidden">
+                            <select name="domain" required class="rounded bg-slate-950 px-3 py-2 text-white">
+                                <option value="power">Power</option>
+                                <option value="ran">RAN</option>
+                                <option value="tx">TX</option>
+                                <option value="core">Core</option>
+                            </select>
+                            <input name="issue_title" required placeholder="Issue title" class="rounded bg-slate-950 px-3 py-2 text-white">
+                            <textarea name="symptoms" required rows="2" placeholder="Symptoms" class="rounded bg-slate-950 px-3 py-2 text-white"></textarea>
+                            <textarea name="root_cause" required rows="2" placeholder="Root cause" class="rounded bg-slate-950 px-3 py-2 text-white"></textarea>
+                            <textarea name="troubleshooting_steps" required rows="3" placeholder="Troubleshooting steps" class="rounded bg-slate-950 px-3 py-2 text-white"></textarea>
+                            <textarea name="resolution" required rows="2" placeholder="Resolution" class="rounded bg-slate-950 px-3 py-2 text-white"></textarea>
+                            <input name="reference_link" placeholder="Reference link" class="rounded bg-slate-950 px-3 py-2 text-white">
+                            <label class="flex items-center gap-2 text-sm"><input name="is_active" type="checkbox" checked> Active</label>
+                            <div class="flex gap-2"><button class="rounded bg-emerald-800 px-3 py-2 text-sm text-white">Save article</button><button type="button" data-cancel="knowledgeForm" class="rounded bg-slate-800 px-3 py-2 text-sm">Cancel</button></div>
+                        </form>
+                    </section>
+
+                </div>
+            </main>
+        </div>
+    </div>
+    <dialog id="passwordDialog" aria-labelledby="passwordDialogTitle" class="w-[min(34rem,calc(100%-2rem))] rounded-2xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+        <div class="flex items-center justify-between border-b border-slate-200 px-6 py-4 dark:border-slate-700">
+            <h2 id="passwordDialogTitle" class="text-lg font-semibold">Change Password</h2>
+            <button type="button" data-close-password aria-label="Close change password dialog" class="rounded-lg p-2 text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <form id="passwordForm" class="grid gap-5 p-6" novalidate>
+            <label class="grid gap-2 text-sm font-medium">Old Password
+                <span class="relative"><input name="current_password" type="password" autocomplete="current-password" required class="password-input" data-state="" aria-label="Old Password">
+                    <button type="button" class="password-toggle" data-password-toggle="current_password" aria-label="Show old password"><i class="fa-regular fa-eye-slash"></i></button></span>
+            </label>
+            <div class="grid gap-2 text-sm font-medium">New Password
+                <span class="relative"><input name="new_password" type="password" autocomplete="new-password" minlength="12" maxlength="72" required class="password-input" aria-describedby="passwordHelp passwordRules" aria-label="New Password">
+                    <button type="button" class="password-toggle" data-password-toggle="new_password" aria-label="Show new password"><i class="fa-regular fa-eye"></i></button></span>
+                <p id="passwordHelp" class="hidden text-sm text-red-600">Please add all necessary characters to create a safe password.</p>
+                <ul id="passwordRules" class="grid gap-1 text-sm font-normal">
+                    <li class="password-rule" data-rule="length" data-met="false">Minimum characters 12</li>
+                    <li class="password-rule" data-rule="upper" data-met="false">One uppercase character</li>
+                    <li class="password-rule" data-rule="lower" data-met="false">One lowercase character</li>
+                    <li class="password-rule" data-rule="special" data-met="false">One special character</li>
+                    <li class="password-rule" data-rule="number" data-met="false">One number</li>
+                </ul>
+            </div>
+            <label class="grid gap-2 text-sm font-medium">Confirm New Password
+                <span class="relative"><input name="confirm_password" type="password" autocomplete="new-password" required placeholder="Enter your confirm new password" class="password-input" data-state="" aria-label="Confirm New Password">
+                    <button type="button" class="password-toggle" data-password-toggle="confirm_password" aria-label="Show confirmation password"><i class="fa-regular fa-eye-slash"></i></button></span>
+                <span id="confirmPasswordError" class="hidden text-sm font-normal text-red-600">Passwords do not match.</span>
+            </label>
+            <p id="passwordFormError" role="alert" class="hidden text-sm text-red-600"></p>
+            <button class="password-submit w-full rounded-xl bg-blue-500 px-5 py-3 font-semibold text-white shadow-lg shadow-blue-500/20 hover:bg-blue-600" type="submit" disabled>Change Password</button>
+        </form>
+    </dialog>
+    <dialog id="processDocumentViewDialog" aria-labelledby="processDocumentViewTitle" class="w-[min(60rem,calc(100%-2rem))] rounded-xl border border-slate-200 bg-white p-0 text-slate-900 shadow-2xl backdrop:bg-slate-950/70 dark:border-slate-700 dark:bg-slate-900 dark:text-slate-100">
+        <div class="flex items-center justify-between gap-3 border-b border-slate-200 px-5 py-3 dark:border-slate-700">
+            <h2 id="processDocumentViewTitle" class="truncate font-semibold"></h2>
+            <button type="button" id="closeProcessDocumentView" aria-label="Close document preview" class="rounded-lg px-3 py-2 hover:bg-slate-100 dark:hover:bg-slate-800"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+        <iframe id="processDocumentPreviewFrame" title="NOC reference document preview" class="hidden h-[75vh] w-full bg-white"></iframe>
+        <div id="processDocumentPreviewFallback" class="hidden p-8 text-center">
+            <p class="mb-4 text-slate-500">This file type can’t be previewed in the browser. Download it to open it.</p>
+            <button id="downloadFromPreview" type="button" class="rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white"><i class="fa-solid fa-download mr-2"></i>Download document</button>
+        </div>
+    </dialog>
+    <script src="/assets/portal-core.js"></script>
+    <script src="/assets/portal-overview.js"></script>
+    <script src="/assets/portal-handover.js"></script>
+    <script src="/assets/portal-content.js"></script>
+    <script src="/assets/portal-user.js"></script>
+    <script src="/assets/portal-init.js"></script>
+</body>
+</html>

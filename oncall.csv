@@ -1,0 +1,12 @@
+Domain,DomainCode,Icon,Color,Tier,Name,Phone,Email
+Radio Access Network (RAN),RAN,tower-cell,green,Primary L2,Dawit Tadele,+251 703298782,dawit.tadele@safaricom.et
+Radio Access Network (RAN),RAN,tower-cell,green,Secondary Cover,Yalfal Tadesse,+251 717550002,yalfal.tadesse@safaricom.et
+Power,PWR,charging-station,amber,Primary L2,Bisrat Awaye,+251 711606001,bisrat.awaye@safaricom.et
+Power,PWR,charging-station,amber,Secondary Cover,Erkeselam Leulseged,+251 799004248,erkeselam.leulseged@safaricom.et
+Transmission,TX,route,sky,IP Layer,Tesfamariam Nigusse,+251 703516467,tesfamariam.nigusse@safaricom.et
+Transmission,TX,route,sky,DWDM ,Aschalew Tigabu,+251 704662305,aschalew.tigabu@safaricom.et
+Transmission,TX,route,sky,Microwave ,Amanuel Taye,+251 713551203,amanuel.taye@safaricom.et
+PS Core& SDM,PS,network-wired,purple,Primary L2,Dereje Gemechu,+251 799100150,dereje.gemechu@safaricom.et
+PS Core& SDM,PS,network-wired,purple,Secondary Cover,Rufael Tilahun,+251 703768879,rufael.tilahun@safaricom.et
+CS Core& VoLTE,CS,diagram-predecessor,red,Primary L2,Alebachew Fanta,+251 710227550,alebachew.fanta@safaricom.et
+CS Core& VoLTE,CS,diagram-predecessor,red,Secondary Cover,Hiruteselassie M.,+251 799101950,hiruteselassie.edris@safaricom.et

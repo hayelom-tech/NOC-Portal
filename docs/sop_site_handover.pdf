@@ -1,0 +1,78 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842]
+   /Contents 4 0 R /Resources << /Font << /F1 5 0 R /F2 6 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 2697 >>
+stream
+BT
+/F1 20 Tf
+50 750 Td
+(SOP-05) Tj
+ET
+BT
+/F2 15 Tf
+50 720 Td
+(Site Handover Process) Tj
+ET
+BT /F1 9 Tf 50 700 Td
+(Department: Network Deployment & NOC Integration   |   Safaricom Ethiopia PLC   |   Version 2.1   |   2026) Tj
+ET
+50 692 m 545 692 l S
+BT /F2 11 Tf 50 675 Td (1. Purpose & Scope) Tj ET
+BT /F1 9 Tf 50 657 Td (Defines the formal acceptance criteria for integrating newly deployed base stations) Tj ET
+BT /F1 9 Tf 50 644 Td (and network nodes from the Projects/Deployment team into live NOC operational custody.) Tj ET
+BT /F2 11 Tf 50 623 Td (2. Pre-Handover Requirements) Tj ET
+BT /F1 9 Tf 60 605 Td (• Site Survey Report: completed and signed by deployment team.) Tj ET
+BT /F1 9 Tf 60 592 Td (• Integration Test Report: all KPIs verified by RF/TX engineer.) Tj ET
+BT /F1 9 Tf 60 579 Td (• Snag List: all outstanding items resolved or formally risk-accepted.) Tj ET
+BT /F1 9 Tf 60 566 Td (• As-Built Documentation: rack layout, cable schedule, IP plan submitted.) Tj ET
+BT /F2 11 Tf 50 545 Td (3. Acceptance Testing Criteria) Tj ET
+BT /F1 9 Tf 60 527 Td (• Cell availability must be 100% at time of handover.) Tj ET
+BT /F1 9 Tf 60 514 Td (• VSWR < 1.5:1 on all antenna ports.) Tj ET
+BT /F1 9 Tf 60 501 Td (• Pilot signal coverage verified per agreed drive test route.) Tj ET
+BT /F1 9 Tf 60 488 Td (• Backhaul link quality: latency < 5ms, no packet loss.) Tj ET
+BT /F1 9 Tf 60 475 Td (• Power system: commercial power connected, DG operational, UPS charged.) Tj ET
+BT /F2 11 Tf 50 454 Td (4. NOC Integration Steps) Tj ET
+BT /F1 9 Tf 60 436 Td (• Add site to OSS/NMS network element manager and alarm system.) Tj ET
+BT /F1 9 Tf 60 423 Td (• Configure alarm thresholds and notification routing in EMS.) Tj ET
+BT /F1 9 Tf 60 410 Td (• Update network topology documentation and CMDB.) Tj ET
+BT /F1 9 Tf 60 397 Td (• Assign site to appropriate regional cluster in NOC monitoring team.) Tj ET
+BT /F2 11 Tf 50 376 Td (5. Provisional Acceptance Period) Tj ET
+BT /F1 9 Tf 60 358 Td (• 30-day provisional period following integration into NOC monitoring.) Tj ET
+BT /F1 9 Tf 60 345 Td (• Deployment team remains responsible for defect rectification.) Tj ET
+BT /F1 9 Tf 60 332 Td (• Any P1/P2 alarm on new site triggers automatic notification to PM.) Tj ET
+BT /F2 11 Tf 50 311 Td (6. Final Acceptance) Tj ET
+BT /F1 9 Tf 60 293 Td (• Issue Final Acceptance Certificate after 30-day defect-free operation.) Tj ET
+BT /F1 9 Tf 60 280 Td (• Site formally transferred to NOC Operations maintenance responsibility.) Tj ET
+BT /F1 9 Tf 60 267 Td (• SLA clock starts from Final Acceptance Certificate date.) Tj ET
+BT /F1 8 Tf 50 30 Td (CONFIDENTIAL — For internal NOC use only. Safaricom Ethiopia PLC.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000254 00000 n 
+0000003003 00000 n 
+0000003073 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R >>
+startxref
+3148
+%%EOF

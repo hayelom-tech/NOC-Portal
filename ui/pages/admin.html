@@ -1,0 +1,373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NOC Portal Administration</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-slate-950 text-slate-100">
+    <div id="toast" role="status" aria-live="polite" class="pointer-events-none fixed right-6 top-6 z-[100] hidden rounded-xl border px-4 py-3 text-sm shadow-2xl"></div>
+    <main class="mx-auto max-w-6xl space-y-8 px-5 py-8">
+        <header class="flex flex-wrap items-center justify-between gap-4">
+            <div><h1 class="text-2xl font-bold">Portal administration</h1><p id="adminUser" class="text-sm text-slate-400"></p></div>
+            <a href="/" class="rounded-lg border border-slate-700 px-4 py-2 text-sm">Back to shift portal</a>
+        </header>
+        <p id="pageStatus" class="sr-only" role="status" aria-live="polite"></p>
+        <section class="grid gap-6 lg:grid-cols-2">
+            <article id="rosterUpload" class="hidden rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <h2 class="mb-3 text-lg font-semibold">1. Front Office shift roster</h2>
+                <p class="mb-4 text-sm text-slate-400">Upload the monthly FO workbook or its CSV export. This replaces FO assignments for the dates in the file and leaves the L2 on-call schedule untouched.</p>
+                <form id="uploadForm" class="space-y-3">
+                    <input id="workbook" name="file" type="file" accept=".xlsx,.csv" required class="block w-full text-sm">
+                    <button class="rounded bg-emerald-800 px-4 py-2 text-sm font-semibold hover:bg-emerald-700">Upload FO roster</button>
+                </form>
+                <p id="foUploadStatus" class="mt-3 text-sm" role="status" aria-live="polite"></p>
+                <pre id="importResult" class="mt-4 overflow-auto whitespace-pre-wrap text-sm text-slate-300"></pre>
+            </article>
+            <article id="l2RosterUpload" class="hidden rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <h2 class="mb-3 text-lg font-semibold">2. L2 on-call roster</h2>
+                <p class="mb-4 text-sm text-slate-400">Upload this month's L2 contacts as Excel or CSV. Use one row per person with Domain, Tier, Name, Phone, and Email. The upload replaces the monthly L2 contact roster; no shift dates or shift names are needed.</p>
+                <a href="/api/v1/uploads/l2-template" class="mb-4 inline-block rounded bg-slate-700 px-3 py-2 text-sm">Download monthly L2 template</a>
+                <form id="l2UploadForm" class="space-y-3">
+                    <input id="l2Workbook" name="file" type="file" accept=".xlsx,.csv" required class="block w-full text-sm">
+                    <button class="rounded bg-indigo-800 px-4 py-2 text-sm font-semibold hover:bg-indigo-700">Upload monthly L2 roster</button>
+                </form>
+                <p id="l2UploadStatus" class="mt-3 text-sm" role="status" aria-live="polite"></p>
+                <pre id="l2ImportResult" class="mt-4 overflow-auto whitespace-pre-wrap text-sm text-slate-300"></pre>
+            </article>
+            <article id="userOnboarding" class="hidden rounded-xl border border-slate-800 bg-slate-900 p-5">
+                <h2 class="mb-3 text-lg font-semibold">Onboard a user</h2>
+                <form id="userForm" class="grid gap-3">
+                    <input name="username" required minlength="3" placeholder="Username" class="rounded bg-slate-950 px-3 py-2">
+                    <input name="full_name" required placeholder="Full name" class="rounded bg-slate-950 px-3 py-2">
+                    <input name="email" required type="email" placeholder="Work email" class="rounded bg-slate-950 px-3 py-2">
+                    <input name="department" placeholder="Department (optional)" class="rounded bg-slate-950 px-3 py-2">
+                    <input name="password" required minlength="12" maxlength="72" type="password" placeholder="Temporary password (12+ characters)" class="rounded bg-slate-950 px-3 py-2">
+                    <select name="role" class="rounded bg-slate-950 px-3 py-2">
+                        <option value="guest">User / Guest — read only</option>
+                        <option value="operator">Operator — handovers; extra permissions granted by admin</option>
+                        <option value="admin">Admin — manage portal and users</option>
+                    </select>
+                    <button class="rounded bg-emerald-700 px-4 py-2 text-sm font-semibold">Create account</button>
+                </form>
+            </article>
+        </section>
+        <section id="rosterTeamMappings" class="hidden rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <h2 class="mb-2 text-lg font-semibold">Front Office team label mappings</h2>
+            <p class="mb-4 text-sm text-slate-400">FO roster uploads must use a registered team label. Map Power and Transmission teams to their challenge domain; leave other teams unmapped. Unknown labels are rejected with the workbook row number.</p>
+            <form id="rosterTeamForm" class="mb-5 flex flex-wrap gap-3">
+                <input name="name" required maxlength="40" placeholder="Team label exactly as used in the workbook" class="min-w-64 flex-1 rounded bg-slate-950 px-3 py-2">
+                <select name="challenge_domain" class="rounded bg-slate-950 px-3 py-2">
+                    <option value="">No challenge domain</option>
+                    <option value="power">Power</option>
+                    <option value="tx">Transmission</option>
+                </select>
+                <button class="rounded bg-indigo-800 px-4 py-2 text-sm font-semibold hover:bg-indigo-700">Add team label</button>
+            </form>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-slate-400"><tr><th class="p-2">Workbook team label</th><th class="p-2">Challenge domain</th><th class="p-2"></th></tr></thead>
+                    <tbody id="rosterTeamsRows"></tbody>
+                </table>
+            </div>
+        </section>
+        <section id="userAccounts" class="hidden rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <h2 class="mb-4 text-lg font-semibold">User accounts</h2>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-sm">
+                    <thead class="text-slate-400"><tr><th class="p-2">User</th><th class="p-2">Email</th><th class="p-2">Role</th><th class="p-2">Content edit</th><th class="p-2">Active</th><th class="p-2"></th></tr></thead>
+                    <tbody id="usersRows"></tbody>
+                </table>
+            </div>
+        </section>
+        <section id="auditSection" class="hidden rounded-xl border border-slate-800 bg-slate-900 p-5">
+            <h2 class="mb-4 text-lg font-semibold">Recent audit records</h2>
+            <div id="auditRows" class="space-y-2 text-sm"></div>
+        </section>
+    </main>
+    <script>
+        const statusBox = document.getElementById('pageStatus');
+        let toastTimeout;
+        function errorMessage(detail, fallback) {
+            if (Array.isArray(detail)) return detail.map(item => item.msg || String(item)).join('; ') || fallback;
+            return detail || fallback;
+        }
+        async function api(url, options = {}) {
+            const response = await fetch(url, options);
+            const result = await response.json().catch(() => ({}));
+            if (response.status === 401) window.location.replace('/login.html');
+            if (!response.ok) throw new Error(errorMessage(result.detail, `Request failed (${response.status})`));
+            return result;
+        }
+        function showToast(text, isError = false) {
+            const toast = document.getElementById('toast');
+            toast.textContent = text;
+            toast.className = 'pointer-events-none fixed right-6 top-6 z-[100] rounded-xl border px-4 py-3 text-sm shadow-2xl ' +
+                (isError
+                    ? 'border-red-700 bg-red-900/90 text-red-100'
+                    : 'border-emerald-700 bg-emerald-900/90 text-emerald-100');
+            window.clearTimeout(toastTimeout);
+            toastTimeout = window.setTimeout(() => {
+                toast.classList.add('hidden');
+                toast.textContent = '';
+            }, 3500);
+        }
+        function message(text, error = false) {
+            statusBox.textContent = text;
+            if (text) showToast(text, error);
+        }
+        function uploadStatus(id, text, state = 'success') {
+            const box = document.getElementById(id);
+            box.textContent = text;
+            box.className = `mt-3 text-sm ${state === 'error' ? 'text-red-400' : state === 'pending' ? 'text-amber-300' : 'text-emerald-300'}`;
+        }
+        function el(tag, text, className) {
+            const item = document.createElement(tag);
+            item.textContent = text ?? '';
+            if (className) item.className = className;
+            return item;
+        }
+        async function loadUsers() {
+            const users = await api('/api/v1/users');
+            const body = document.getElementById('usersRows');
+            body.replaceChildren();
+            for (const user of users) {
+                const row = document.createElement('tr');
+                row.className = 'border-t border-slate-800';
+                const name = el('td', `${user.full_name} (${user.username})`, 'p-2');
+                const email = el('td', user.email, 'p-2');
+                const roleCell = el('td', null, 'p-2');
+                const role = document.createElement('select');
+                role.className = 'rounded bg-slate-950 px-2 py-1';
+                for (const [value, label] of Object.entries({
+                    guest: 'User / Guest',
+                    operator: 'Operator',
+                    admin: 'Admin'
+                })) {
+                    const option = el('option', label);
+                    option.value = value;
+                    role.append(option);
+                }
+                role.value = user.role;
+                roleCell.append(role);
+                const contentCell = el('td', null, 'p-2');
+                const canEditContent = document.createElement('input');
+                canEditContent.type = 'checkbox';
+                canEditContent.checked = user.can_edit_content;
+                canEditContent.disabled = user.role !== 'operator';
+                contentCell.append(canEditContent);
+                const activeCell = el('td', null, 'p-2');
+                const active = document.createElement('input');
+                active.type = 'checkbox';
+                active.checked = user.is_active;
+                activeCell.append(active);
+                role.addEventListener('change', () => {
+                    const isOperator = role.value === 'operator';
+                    canEditContent.disabled = !isOperator;
+                    if (!isOperator) {
+                        canEditContent.checked = false;
+                    }
+                });
+                const actions = el('td', null, 'p-2 flex flex-wrap gap-2');
+                const save = el('button', 'Save', 'rounded bg-slate-700 px-3 py-1');
+                save.addEventListener('click', async () => {
+                    try {
+                        await api(`/api/v1/users/${user.id}`, {
+                            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({
+                                role: role.value,
+                                is_active: active.checked,
+                                can_edit_content: role.value === 'operator' && canEditContent.checked,
+                                can_upload_roster: false
+                            })
+                        });
+                        message(`Updated ${user.username}.`);
+                        await loadUsers();
+                    } catch (error) { message(error.message, true); }
+                });
+
+                const deactivate = el(
+                    'button',
+                    user.is_active ? 'Deactivate' : 'Activate',
+                    'rounded bg-amber-700 px-3 py-1'
+                );
+                deactivate.addEventListener('click', async () => {
+                    try {
+                        await api(`/api/v1/users/${user.id}`, {
+                            method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ is_active: !user.is_active })
+                        });
+                        message(`${user.is_active ? 'Deactivated' : 'Activated'} ${user.username}.`);
+                        await loadUsers();
+                    } catch (error) { message(error.message, true); }
+                });
+
+                const remove = el('button', 'Delete', 'rounded bg-red-700 px-3 py-1');
+                remove.addEventListener('click', async () => {
+                    if (!confirm(`Permanently delete ${user.username}? This cannot be undone.`)) return;
+                    try {
+                        const response = await fetch(`/api/v1/users/${user.id}`, { method: 'DELETE' });
+                        if (response.status === 204) {
+                            message(`Deleted ${user.username}.`);
+                            await loadUsers();
+                        } else {
+                            const body = await response.json().catch(() => ({}));
+                            message(errorMessage(body.detail, 'Could not delete user.'), true);
+                        }
+                    } catch (error) { message(error.message, true); }
+                });
+
+                actions.append(save, deactivate, remove);
+                row.append(name, email, roleCell, contentCell, activeCell, actions);
+                body.append(row);
+            }
+        }
+        async function loadRosterTeams() {
+            const teams = await api('/api/v1/roster-teams');
+            const body = document.getElementById('rosterTeamsRows');
+            body.replaceChildren();
+            for (const team of teams) {
+                const row = document.createElement('tr');
+                row.className = 'border-t border-slate-800';
+                const name = el('td', team.name, 'p-2');
+                const domainCell = el('td', '', 'p-2');
+                const domain = document.createElement('select');
+                domain.className = 'rounded bg-slate-950 px-2 py-1';
+                for (const [value, label] of [['', 'No challenge domain'], ['power', 'Power'], ['tx', 'Transmission']]) {
+                    const option = document.createElement('option');
+                    option.value = value;
+                    option.textContent = label;
+                    domain.append(option);
+                }
+                domain.value = team.challenge_domain || '';
+                domainCell.append(domain);
+                const actionCell = el('td', '', 'p-2');
+                const save = el('button', 'Save', 'rounded bg-slate-700 px-3 py-1');
+                save.type = 'button';
+                save.addEventListener('click', async () => {
+                    save.disabled = true;
+                    try {
+                        await api(`/api/v1/roster-teams/${team.id}`, {
+                            method: 'PATCH',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ challenge_domain: domain.value || null })
+                        });
+                        message(`Updated the challenge domain for ${team.name}.`);
+                    } catch (error) {
+                        message(error.message, true);
+                    } finally {
+                        save.disabled = false;
+                    }
+                });
+                actionCell.append(save);
+                row.append(name, domainCell, actionCell);
+                body.append(row);
+            }
+            if (!teams.length) body.append(el('tr', 'No team labels registered yet.', 'text-slate-500'));
+        }
+        async function start() {
+            const user = await api('/api/v1/auth/me');
+            const isAdmin = user.role === 'admin';
+            if (!isAdmin) {
+                message('Only administrators can upload rosters.', true);
+                document.querySelector('main').replaceChildren(statusBox);
+                return;
+            }
+            document.getElementById('adminUser').textContent = `Signed in as ${user.full_name}`;
+            if (isAdmin) {
+                document.getElementById('rosterUpload').classList.remove('hidden');
+                document.getElementById('l2RosterUpload').classList.remove('hidden');
+                document.getElementById('rosterTeamMappings').classList.remove('hidden');
+                document.getElementById('userOnboarding').classList.remove('hidden');
+                document.getElementById('userAccounts').classList.remove('hidden');
+                document.getElementById('auditSection').classList.remove('hidden');
+                await loadUsers();
+                await loadRosterTeams();
+                const audits = await api('/api/v1/audit-logs?limit=50');
+                const auditRows = document.getElementById('auditRows');
+                for (const record of audits) {
+                    auditRows.append(el('p', `${new Date(record.created_at).toLocaleString()} · ${record.action} · ${record.entity_type} #${record.entity_id}`, 'border-t border-slate-800 pt-2'));
+                }
+                if (!audits.length) auditRows.append(el('p', 'No audit records yet.', 'text-slate-500'));
+            }
+        }
+        document.getElementById('userForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = new FormData(event.currentTarget);
+            const payload = Object.fromEntries(form.entries());
+            try {
+                const created = await api('/api/v1/users', {
+                    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload)
+                });
+                event.currentTarget.reset();
+                message(`Account ${created.username} created.`);
+                await loadUsers();
+            } catch (error) { message(error.message, true); }
+        });
+        document.getElementById('rosterTeamForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            const form = event.currentTarget;
+            const values = Object.fromEntries(new FormData(form).entries());
+            try {
+                await api('/api/v1/roster-teams', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: values.name,
+                        challenge_domain: values.challenge_domain || null
+                    })
+                });
+                form.reset();
+                message(`Registered the team label ${values.name}.`);
+                await loadRosterTeams();
+            } catch (error) { message(error.message, true); }
+        });
+        document.getElementById('uploadForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            const input = document.getElementById('workbook');
+            const file = input.files[0];
+            if (!file) return uploadStatus('foUploadStatus', 'Choose an FO roster .xlsx or .csv file.', 'error');
+            const data = new FormData();
+            data.append('file', file);
+            const button = event.currentTarget.querySelector('button[type="submit"], button:not([type])');
+            button.disabled = true;
+            uploadStatus('foUploadStatus', `Uploading ${file.name}…`, 'pending');
+            try {
+                const result = await api('/api/v1/uploads/excel', { method: 'POST', body: data });
+                document.getElementById('importResult').textContent =
+                    `${result.original_name}: ${result.sheets.map(sheet => `${sheet.sheet_name}: ${sheet.imported_count} rows`).join('\n')}`;
+                input.value = '';
+                uploadStatus('foUploadStatus', `Success: ${result.original_name} was imported.`);
+                message('Workbook imported successfully.');
+            } catch (error) {
+                uploadStatus('foUploadStatus', `Upload failed: ${error.message}`, 'error');
+                message(error.message, true);
+            } finally { button.disabled = false; }
+        });
+        document.getElementById('l2UploadForm').addEventListener('submit', async event => {
+            event.preventDefault();
+            const input = document.getElementById('l2Workbook');
+            const file = input.files[0];
+            if (!file) return uploadStatus('l2UploadStatus', 'Choose an L2 roster .xlsx or .csv file.', 'error');
+            const data = new FormData();
+            data.append('file', file);
+            const button = event.currentTarget.querySelector('button[type="submit"], button:not([type])');
+            button.disabled = true;
+            uploadStatus('l2UploadStatus', `Uploading ${file.name}…`, 'pending');
+            try {
+                const result = await api('/api/v1/uploads/l2-excel', { method: 'POST', body: data });
+                document.getElementById('l2ImportResult').textContent =
+                    `${result.original_name}: ${result.imported_count} L2 on-call entries imported from ${result.sheet_name}.`;
+                input.value = '';
+                uploadStatus('l2UploadStatus', `Success: ${result.original_name} was imported (${result.imported_count} entries).`);
+                message('L2 on-call roster imported successfully.');
+            } catch (error) {
+                uploadStatus('l2UploadStatus', `Upload failed: ${error.message}`, 'error');
+                message(error.message, true);
+            } finally { button.disabled = false; }
+        });
+        start().catch(error => message(error.message, true));
+    </script>
+</body>
+</html>

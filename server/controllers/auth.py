@@ -1,0 +1,103 @@
+"""HTTP routes for the auth domain."""
+from fastapi import APIRouter, Depends, HTTPException, Request
+from fastapi.responses import JSONResponse
+from sqlalchemy import select
+from sqlalchemy.orm import Session
+from server.config import COOKIE_NAME, cookie_secure
+from server.controllers.common import authenticated_response, record_audit
+from server.database import get_db
+from server.models import User
+from server.schemas import AvatarUpdate, LoginInput, PasswordChange, UserRead
+from server.services.login_rate_limit import login_rate_limiter
+from server.services.permissions import full_matrix
+from server.services.security import (
+    DUMMY_PASSWORD_HASH,
+    get_current_user,
+    hash_password,
+    verify_password,
+)
+
+router = APIRouter()
+
+@router.post("/api/v1/auth/login")
+def login(payload: LoginInput, request: Request, db: Session = Depends(get_db)):
+    username = payload.username.strip().casefold()
+    forwarded = None
+    real_ip = None
+    # Proxy headers are resolved by uvicorn (--proxy-headers) in production.
+    if forwarded:
+        address = forwarded.split(",")[0].strip()
+    elif real_ip:
+        address = real_ip.strip()
+    elif request.client:
+        address = request.client.host
+    else:
+        address = "unknown"
+    retry_after = login_rate_limiter.retry_after(address, username)
+    if retry_after:
+        raise HTTPException(
+            status_code=429,
+            detail="Too many sign-in attempts. Try again later.",
+            headers={"Retry-After": str(retry_after)},
+        )
+
+    user = db.scalar(select(User).where(User.username == username))
+    password_hash = user.password_hash if user is not None else DUMMY_PASSWORD_HASH
+    password_matches = verify_password(payload.password, password_hash)
+    if user is None or not user.is_active or not password_matches:
+        login_rate_limiter.record_failure(address, username)
+        raise HTTPException(status_code=401, detail="Invalid username or password")
+
+    login_rate_limiter.record_success(address, username)
+    return authenticated_response(user)
+
+
+@router.post("/api/v1/auth/logout")
+def logout():
+    response = JSONResponse({"status": "success"})
+    response.delete_cookie(COOKIE_NAME, path="/", httponly=True, secure=cookie_secure(), samesite="strict")
+    return response
+
+
+@router.get("/api/v1/auth/me", response_model=UserRead)
+def current_user(user: User = Depends(get_current_user)):
+    return user
+
+
+@router.post("/api/v1/auth/password")
+def change_password(
+    payload: PasswordChange,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    if not verify_password(payload.current_password, user.password_hash):
+        raise HTTPException(status_code=400, detail="Current password is incorrect")
+    try:
+        user.password_hash = hash_password(payload.new_password)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    user.auth_version += 1
+    record_audit(db, user, "user.password_changed", "user", user.id)
+    db.commit()
+    return authenticated_response(user)
+
+
+@router.patch("/api/v1/auth/me/avatar")
+def update_avatar(
+    payload: AvatarUpdate,
+    db: Session = Depends(get_db),
+    user: User = Depends(get_current_user),
+):
+    allowed = {"default", "green", "blue", "purple", "amber", "rose", "teal", "indigo"}
+    if payload.avatar_key not in allowed:
+        raise HTTPException(status_code=422, detail="Unknown avatar key")
+    user.avatar_key = payload.avatar_key
+    record_audit(db, user, "user.avatar_updated", "user", user.id)
+    db.commit()
+    db.refresh(user)
+    return UserRead.model_validate(user)
+
+
+@router.get("/api/v1/auth/permissions")
+def my_permissions(user: User = Depends(get_current_user)):
+    return full_matrix(user)
