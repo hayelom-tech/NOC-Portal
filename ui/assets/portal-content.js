@@ -79,7 +79,7 @@ async function loadProcessDocuments() {
             const remove = node('button', 'Delete', 'inline-flex items-center gap-2 rounded-lg border border-red-800 px-3 py-2 text-sm font-medium text-red-300 hover:bg-red-950/60');
             remove.type = 'button';
             remove.addEventListener('click', async () => {
-                if (!window.confirm(`Delete “${documentInfo.title}”? This cannot be undone.`)) return;
+                if (!window.confirm(`Delete ${JSON.stringify(documentInfo.title)}? This cannot be undone.`)) return;
                 remove.disabled = true;
                 try {
                     await api(`/api/v1/process-documents/${documentInfo.id}`, { method: 'DELETE' });
