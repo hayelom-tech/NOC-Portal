@@ -33,15 +33,16 @@ function localDateValue(date = new Date()) {
 async function loadHomeDomainShiftCards() {
     const requestId = ++homeRosterRequestId;
     const now = new Date();
-    const currentHour = now.getHours();
+    const currentHour = addisHour();
     const fallbackShiftName = currentHour >= 6 && currentHour < 14
         ? 'morning'
         : currentHour >= 14 && currentHour < 22 ? 'afternoon' : 'night';
+    const addisNow = addisDate();
     const fallbackDate = currentHour < 6
-        ? localDateValue(new Date(now.getFullYear(), now.getMonth(), now.getDate() - 1))
-        : localDateValue(now);
+        ? localDateValue(new Date(addisNow.getFullYear(), addisNow.getMonth(), addisNow.getDate() - 1))
+        : localDateValue(addisNow);
     const dateValue = selectedShift?.shift_date || fallbackDate;
-    const shiftName = selectedShift?.shift_name || fallbackShiftName;
+    const shiftName = fallbackShiftName;
     const dateLabel = dateValue
         ? new Date(`${dateValue}T12:00:00`).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' })
         : '—';

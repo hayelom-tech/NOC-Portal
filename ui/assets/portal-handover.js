@@ -4,7 +4,7 @@ function isShiftActive(shift, now = new Date()) {
         const [hours, minutes] = value.split(':').map(Number);
         return hours * 60 + minutes;
     };
-    const current = now.getHours() * 60 + now.getMinutes();
+    const current = addisHour() * 60 + addisMinutes();
     const start = toMinutes(shift.start_time);
     const end = toMinutes(shift.end_time);
     const today = localDateValue(now);
@@ -157,7 +157,7 @@ async function loadSelectedShift() {
     const handoverDate = new Date(`${selectedShift.shift_date}T12:00:00`).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' });
     document.getElementById('handoverShiftLabel').textContent = `${handoverDate} · ${shiftLabels[selectedShift.shift_name]} shift`;
     const [handover, previousHandover, rosterRows] = await Promise.all([
-        api(`/api/v1/shifts/${id}/handover`).catch(error => error.message.includes('No handover') ? null : Promise.reject(error)),
+        api(`/api/v1/shifts/${id}/handover`).catch(error => (error.message.includes('No handover') || error.message.includes('404')) ? null : Promise.reject(error)),
         loadPreviousHandover(selectedShift),
         api(`/api/v1/roster?date=${encodeURIComponent(selectedShift.shift_date)}`).catch(() => [])
     ]);

@@ -19,6 +19,8 @@ PUBLIC_PATHS = {
     "/api/v1/auth/logout",
     "/favicon.ico",
     "/healthz",
+    "/healthz/live",
+    "/healthz/ready",
 }
 HTML_PATHS = {
     "/",
@@ -38,6 +40,7 @@ def install_middleware(app: FastAPI) -> None:
         response = await call_next(request)
         response.headers["X-Request-ID"] = request_id
         response.headers.setdefault("X-Content-Type-Options", "nosniff")
+        response.headers.setdefault("Content-Security-Policy", "default-src 'self'; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; img-src 'self' data:; connect-src 'self'; frame-ancestors 'none'; base-uri 'self'")
         response.headers.setdefault("X-Frame-Options", "DENY")
         response.headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
         response.headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
@@ -46,7 +49,7 @@ def install_middleware(app: FastAPI) -> None:
         if request.url.path == "/api-docs":
             response.headers["Cache-Control"] = "no-store"
         if app_environment() == "production":
-            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000")
+            response.headers.setdefault("Strict-Transport-Security", "max-age=31536000; includeSubDomains")
         request_logger.info(
             "request completed request_id=%s method=%s path=%s status=%s duration_ms=%.2f",
             request_id,

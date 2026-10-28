@@ -8,8 +8,8 @@
         if (localStorage.getItem('theme') === 'light') document.documentElement.classList.remove('dark');
     </script>
     <script>window.tailwind = window.tailwind || {}; tailwind.config = { darkMode: 'class' };</script>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="/assets/vendor/tailwindcss.js?v=2" onerror="this.onerror=null;this.src='https://cdn.tailwindcss.com'"></script>
+    <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'">
     <style>
         .knowledge-domain-nav {
             max-height: 0;
@@ -696,11 +696,11 @@
             <button id="downloadFromPreview" type="button" class="rounded-lg bg-emerald-700 px-4 py-2 font-semibold text-white"><i class="fa-solid fa-download mr-2"></i>Download document</button>
         </div>
     </dialog>
-    <script src="/assets/portal-core.js"></script>
-    <script src="/assets/portal-overview.js"></script>
-    <script src="/assets/portal-handover.js"></script>
-    <script src="/assets/portal-content.js"></script>
-    <script src="/assets/portal-user.js"></script>
-    <script src="/assets/portal-init.js"></script>
+    <script src="/assets/portal-core.js?v=3"></script>
+    <script src="/assets/portal-overview.js?v=3"></script>
+    <script src="/assets/portal-handover.js?v=2"></script>
+    <script src="/assets/portal-content.js?v=2"></script>
+    <script src="/assets/portal-user.js?v=2"></script>
+    <script src="/assets/portal-init.js?v=2"></script>
 </body>
 </html>

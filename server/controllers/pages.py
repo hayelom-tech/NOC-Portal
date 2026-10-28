@@ -28,6 +28,19 @@ def _inject_data(html_file: str, variable_name: str, data: object) -> HTMLRespon
     return HTMLResponse(content=html.replace("</head>", script_tag + "\n</head>", 1))
 
 
+@router.get("/healthz/live", include_in_schema=False)
+def liveness() -> dict[str, str]:
+    """Process is alive (no dependency checks)."""
+    return {"status": "ok"}
+
+
+@router.get("/healthz/ready", include_in_schema=False)
+def readiness() -> dict[str, str]:
+    """Dependencies (database) are reachable."""
+    with SessionLocal() as db:
+        db.execute(text("SELECT 1"))
+    return {"status": "ok"}
+
 @router.get("/healthz", include_in_schema=False)
 def healthz() -> dict[str, str]:
     """Minimal readiness probe; intentionally returns no dependency details."""

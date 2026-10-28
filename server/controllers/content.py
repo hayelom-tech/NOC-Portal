@@ -379,6 +379,7 @@ def mark_notification_read(
     if notification is None or notification.recipient_id != actor.id:
         raise HTTPException(status_code=404, detail="Notification not found")
     notification.is_read = True
+    record_audit(db, actor, "notification.read", "admin_notification", notification_id)
     db.commit()
     return {"status": "read"}
 

@@ -63,3 +63,5 @@ async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
     validate_runtime_config()
     ensure_initial_admin()
     yield
+    from server.database import engine
+    engine.dispose()

@@ -2,6 +2,36 @@ const shiftDate = document.getElementById('shiftDate');
 const shiftSelect = document.getElementById('shiftSelect');
 const statusText = document.getElementById('status');
 const shiftLabels = { morning: 'Morning', afternoon: 'Afternoon', night: 'Night' };
+// Return the current hour (0-23) in Addis Ababa time (EAT, UTC+3).
+// Do NOT use `new Date().getHours()` — that returns browser-local time,
+// which is wrong for shift workers on UTC or other timezones.
+function addisHour() {
+    return parseInt(
+        new Date().toLocaleString('en-US', {
+            timeZone: 'Africa/Addis_Ababa',
+            hour: '2-digit',
+            hour12: false
+        }),
+        10
+    );
+}
+
+function addisDate() {
+    const iso = new Date().toLocaleDateString('en-CA', { timeZone: 'Africa/Addis_Ababa' });
+    const [y, m, d] = iso.split('-').map(Number);
+    return new Date(y, m - 1, d);
+}
+
+function addisMinutes() {
+    const parts = new Date().toLocaleString('en-US', {
+        timeZone: 'Africa/Addis_Ababa',
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+    }).match(/(\d+):(\d+)/);
+    return parts ? parseInt(parts[2], 10) : 0;
+}
+
 const shiftOrder = { morning: 0, afternoon: 1, night: 2 };
 const regionNames = ['Afar', 'East 1', 'East 2', 'North', 'North East', 'North West', 'West'];
 const domainLabels = { tx: 'TX', ran: 'RAN', power: 'Power', core: 'Core' };
@@ -182,7 +212,11 @@ async function api(url, options = {}) {
         throw new Error('Your session has expired. Sign in again.');
     }
     const body = await response.json().catch(() => ({}));
-    if (!response.ok) throw new Error(errorMessage(body.detail, `Request failed (${response.status})`));
+    if (!response.ok) {
+        const err = new Error(errorMessage(body.detail, `Request failed (${response.status})`));
+        err.status = response.status;
+        throw err;
+    }
     return body;
 }
 

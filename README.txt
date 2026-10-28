@@ -236,3 +236,16 @@ Project layout
 - server/domain/: shared domain constants and normalization
 - server/migrations/: Alembic environment and schema revisions
 - server/alembic.ini: Alembic configuration
+
+
+Vendor front-end assets (air-gapped / isolated networks)
+------------------------------------------------------
+Run once before deploying to an environment without internet access:
+    python scripts/vendor_assets.py
+This downloads Tailwind (Play CDN) and Font Awesome 6.4.0 into ui/assets/vendor/.
+Migrations are forward-only. If a deploy fails, restore from the last backup and fix forward.
+" old_text">
+- server/alembic.ini: Alembic configuration
+The HTML pages fall back to the public CDNs if the vendored files are absent.
+" old_text">
+- server/alembic.ini: Alembic configuration

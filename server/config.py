@@ -61,8 +61,10 @@ def validate_runtime_config() -> None:
         raise RuntimeError("COOKIE_SECURE must be true in production (serve the app over HTTPS).")
     if os.getenv("POSTGRES_PASSWORD", "") == "dev-only-change-me" or "dev-only-change-me" in os.getenv("DATABASE_URL", ""):
         raise RuntimeError("Replace the development PostgreSQL password before running in production.")
-    if os.getenv("INITIAL_ADMIN_PASSWORD", "") == "ChangeMeNow123!":
-        raise RuntimeError("Set a unique INITIAL_ADMIN_PASSWORD before running in production.")
+    if os.getenv("INITIAL_ADMIN_PASSWORD", "").casefold() in {"", "changemenow123!", "password", "admin", "1234567890123456"}:
+        raise RuntimeError("Set a strong INITIAL_ADMIN_PASSWORD (at least 16 characters) before running in production.")
+    if len(os.getenv("INITIAL_ADMIN_PASSWORD", "")) < 16:
+        raise RuntimeError("INITIAL_ADMIN_PASSWORD must be at least 16 characters in production.")
 
 
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
