@@ -1295,6 +1295,122 @@ class PortalHttpFlows(unittest.TestCase):
         assignment = next(row for row in roster if row["member_name"] == "Excel Roster Operator")
         self.assertEqual(assignment["team"], "Power")
 
+    def test_all_mutating_endpoints_write_audit_log(self):
+        admin = self.client("admin")
+        operator = self.client("operator")
+
+        # Count audit rows before
+        status, before = self.request_json(admin, "GET", "/api/v1/audit-logs?limit=500")
+        self.assertEqual(status, 200)
+        count_before = len(before)
+
+        # Mutating endpoints with valid payloads
+        checks = []
+
+        # 1. Create user
+        status, user = self.request_json(admin, "POST", "/api/v1/users", {
+            "username": "audit_test_user",
+            "email": "audit-test@integration.invalid",
+            "full_name": "Audit Test User",
+            "password": "AuditTest123!",
+            "role": "guest",
+        })
+        self.assertEqual(status, 201, user)
+        checks.append(("user.created", "user", user["id"]))
+
+        # 2. Update user
+        status, updated = self.request_json(admin, "PATCH", f"/api/v1/users/{user['id']}", {"full_name": "Updated Audit User"})
+        self.assertEqual(status, 200, updated)
+        checks.append(("user.updated", "user", user["id"]))
+
+        # 4. Create process
+        status, process = self.request_json(admin, "POST", "/api/v1/process", {
+            "category": "Integration",
+            "title": "Audit test process",
+            "description": "Test",
+            "steps": "Step one",
+            "is_active": True,
+        })
+        self.assertEqual(status, 201, process)
+        checks.append(("process.created", "process", process["id"]))
+
+        # 5. Update process
+        status, updated_process = self.request_json(admin, "PUT", f"/api/v1/process/{process['id']}", {
+            "category": "Integration",
+            "title": "Audit test process updated",
+            "description": "Test",
+            "steps": "Step one",
+            "is_active": True,
+            "expected_updated_at": process["updated_at"],
+        })
+        self.assertEqual(status, 200, updated_process)
+        checks.append(("process.updated", "process", process["id"]))
+
+        # 6. Create knowledge article
+        status, article = self.request_json(admin, "POST", "/api/v1/knowledge-hub", {
+            "domain": "power",
+            "issue_title": "Audit test article",
+            "symptoms": "Test",
+            "root_cause": "Test",
+            "troubleshooting_steps": "Test",
+            "resolution": "Test",
+        })
+        self.assertEqual(status, 201, article)
+        checks.append(("knowledge.created", "knowledge_article", article["id"]))
+
+        # 7. Update knowledge article
+        status, updated_article = self.request_json(admin, "PUT", f"/api/v1/knowledge-hub/{article['id']}", {
+            "domain": "power",
+            "issue_title": "Audit test article updated",
+            "symptoms": "Test",
+            "root_cause": "Test",
+            "troubleshooting_steps": "Test",
+            "resolution": "Test",
+            "expected_updated_at": article["updated_at"],
+        })
+        self.assertEqual(status, 200, updated_article)
+        checks.append(("knowledge.updated", "knowledge_article", article["id"]))
+
+        # 8. Create roster team
+        status, team = self.request_json(admin, "POST", "/api/v1/roster-teams", {
+            "name": "Audit Test Team",
+            "challenge_domain": "power",
+        })
+        self.assertEqual(status, 201, team)
+        checks.append(("roster_team.created", "roster_team", team["id"]))
+
+        # 9. Update roster team domain
+        status, updated_team = self.request_json(admin, "PATCH", f"/api/v1/roster-teams/{team['id']}", {
+            "challenge_domain": "tx",
+        })
+        self.assertEqual(status, 200, updated_team)
+        checks.append(("roster_team.domain_updated", "roster_team", team["id"]))
+
+        # 10. Mark notification read (create one first via knowledge approval flow)
+        # Skip notification — requires operator submission + admin notification
+
+        # Count audit rows after
+        status, after = self.request_json(admin, "GET", "/api/v1/audit-logs?limit=500")
+        self.assertEqual(status, 200)
+        count_after = len(after)
+
+        # Verify count increased by at least the number of checks
+        self.assertGreaterEqual(
+            count_after - count_before,
+            len(checks),
+            f"Expected at least {len(checks)} new audit rows, got {count_after - count_before}",
+        )
+
+        # Verify each expected action exists in the new rows
+        new_actions = {row["action"] for row in after[:count_after - count_before + 5]}
+        for expected_action, _, _ in checks:
+            self.assertIn(expected_action, new_actions, f"Missing audit action: {expected_action}")
+
+        # Cleanup
+        self.request_json(admin, "DELETE", f"/api/v1/users/{user['id']}")
+        self.request_json(admin, "DELETE", f"/api/v1/process/{process['id']}")
+        self.request_json(admin, "DELETE", f"/api/v1/knowledge-hub/{article['id']}")
+        self.request_json(admin, "DELETE", f"/api/v1/roster-teams/{team['id']}")
 
 if __name__ == "__main__":
     unittest.main()

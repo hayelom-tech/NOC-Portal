@@ -245,6 +245,14 @@ Run once before deploying to an environment without internet access:
 This downloads Tailwind (Play CDN) and Font Awesome 6.4.0 into ui/assets/vendor/.
 Migrations are forward-only. If a deploy fails, restore from the last backup and fix forward.
 " old_text">
+Migration rollback testing (manual, pre-deploy):
+    1. Back up: docker compose exec db pg_dump -U noc_portal -d noc_portal > backup.sql
+    2. Verify backup is non-trivial (at least a few hundred KB).
+    3. Create test DB: docker compose exec db psql -U postgres -c "CREATE DATABASE noc_portal_rollback_test OWNER noc_portal;"
+    4. Restore: docker compose exec -T db psql -U noc_portal -d noc_portal_rollback_test < backup.sql
+    5. Downgrade: docker compose run --rm -e DATABASE_URL="postgresql+psycopg://noc_portal:dev-only-change-me@db:5432/noc_portal_rollback_test" app alembic -c server/alembic.ini downgrade -1
+    6. Drop test DB: docker compose exec db psql -U postgres -c "DROP DATABASE noc_portal_rollback_test;"
+    Record the result (reversible or forward-only) in this README.
 - server/alembic.ini: Alembic configuration
 The HTML pages fall back to the public CDNs if the vendored files are absent.
 " old_text">
