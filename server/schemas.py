@@ -336,3 +336,12 @@ class AuditRead(BaseModel):
 
 class AvatarUpdate(BaseModel):
     avatar_key: str = Field(min_length=1, max_length=20)
+
+
+class PasswordResetRequest(BaseModel):
+    username: str = Field(min_length=1, max_length=80)
+
+
+class PasswordResetConfirm(BaseModel):
+    token: str = Field(min_length=1)
+    new_password: str = Field(min_length=12, max_length=72)

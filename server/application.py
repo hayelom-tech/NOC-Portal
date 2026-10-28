@@ -1,6 +1,7 @@
 from pathlib import Path
 
 from fastapi import FastAPI
+from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from server.controllers.auth import router as auth_router
@@ -24,6 +25,7 @@ def create_app() -> FastAPI:
         openapi_url="/api/openapi.json",
         lifespan=lifespan,
     )
+    app.add_middleware(GZipMiddleware, minimum_size=10000)
     install_middleware(app)
     for router in (
         auth_router,

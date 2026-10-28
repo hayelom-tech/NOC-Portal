@@ -6,14 +6,18 @@ from sqlalchemy.orm import Session
 from server.config import COOKIE_NAME, cookie_secure
 from server.controllers.common import authenticated_response, record_audit
 from server.database import get_db
-from server.models import User
-from server.schemas import AvatarUpdate, LoginInput, PasswordChange, UserRead
+from server.models import User, UserRole
+from server.schemas import AvatarUpdate, LoginInput, PasswordChange, PasswordResetConfirm, PasswordResetRequest, UserRead
 from server.services.login_rate_limit import login_rate_limiter
 from server.services.permissions import full_matrix
 from server.services.security import (
     DUMMY_PASSWORD_HASH,
+    RESET_TOKEN_MINUTES,
+    create_reset_token,
     get_current_user,
     hash_password,
+    require_roles,
+    user_from_reset_token,
     verify_password,
 )
 
@@ -79,7 +83,39 @@ def change_password(
     user.auth_version += 1
     record_audit(db, user, "user.password_changed", "user", user.id)
     db.commit()
-    return authenticated_response(user)
+@router.post("/api/v1/auth/reset-password", response_model=dict)
+def generate_reset_token(
+    payload: PasswordResetRequest,
+    db: Session = Depends(get_db),
+    actor: User = Depends(require_roles(UserRole.admin)),
+):
+    user = db.scalar(select(User).where(User.username == payload.username.strip().casefold()))
+    if user is None or not user.is_active:
+        raise HTTPException(status_code=404, detail="User not found")
+    token = create_reset_token(user)
+    record_audit(db, actor, "password.reset_requested", "user", user.id)
+    db.commit()
+    return {"reset_token": token, "expires_in_minutes": RESET_TOKEN_MINUTES}
+
+
+@router.post("/api/v1/auth/reset-password/confirm")
+def confirm_reset_token(
+    payload: PasswordResetConfirm,
+    db: Session = Depends(get_db),
+):
+    user = user_from_reset_token(payload.token, db)
+    try:
+        user.password_hash = hash_password(payload.new_password)
+    except ValueError as exc:
+        raise HTTPException(status_code=422, detail=str(exc)) from exc
+    user.auth_version += 1
+    record_audit(db, user, "password.reset_completed", "user", user.id)
+    db.commit()
+    return {"status": "password_reset"}
+
+
+
+
 
 
 @router.patch("/api/v1/auth/me/avatar")

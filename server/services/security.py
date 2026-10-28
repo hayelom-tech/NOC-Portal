@@ -11,6 +11,7 @@ from server.database import get_db
 from server.models import User, UserRole
 
 ALGORITHM = "HS256"
+RESET_TOKEN_MINUTES = 15
 DUMMY_PASSWORD_HASH = bcrypt.hashpw(secrets.token_bytes(32), bcrypt.gensalt()).decode("ascii")
 
 def hash_password(password: str) -> str:
@@ -39,6 +40,36 @@ def create_access_token(user: User) -> str:
         jwt_secret(),
         algorithm=ALGORITHM,
     )
+
+def create_reset_token(user: User) -> str:
+    expires = datetime.now(timezone.utc) + timedelta(minutes=RESET_TOKEN_MINUTES)
+    return jwt.encode(
+        {
+            "sub": str(user.id),
+            "exp": expires,
+            "purpose": "password_reset",
+        },
+        jwt_secret(),
+        algorithm=ALGORITHM,
+    )
+
+
+def user_from_reset_token(token: str, db: Session) -> User:
+    credentials_error = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Invalid or expired reset token",
+    )
+    try:
+        payload = jwt.decode(token, jwt_secret(), algorithms=[ALGORITHM])
+        if payload.get("purpose") != "password_reset":
+            raise credentials_error
+        user_id = int(payload["sub"])
+    except (JWTError, KeyError, TypeError, ValueError):
+        raise credentials_error
+    user = db.get(User, user_id)
+    if user is None or not user.is_active:
+        raise credentials_error
+    return user
 
 
 def user_from_token(token: str, db: Session) -> User:

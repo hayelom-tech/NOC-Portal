@@ -4,7 +4,7 @@ from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from pydantic import ValidationError
-from sqlalchemy import select
+from sqlalchemy import select, text
 from sqlalchemy.exc import IntegrityError
 
 from server.config import validate_runtime_config
@@ -60,6 +60,17 @@ def ensure_initial_admin() -> None:
 
 @asynccontextmanager
 async def lifespan(_: FastAPI) -> AsyncGenerator[None, None]:
+    import time
+    from sqlalchemy.exc import OperationalError
+    for attempt in range(5):
+        try:
+            with SessionLocal() as db:
+                db.execute(text("SELECT 1"))
+            break
+        except OperationalError:
+            if attempt == 4:
+                raise
+            time.sleep(2 * (attempt + 1))
     validate_runtime_config()
     ensure_initial_admin()
     yield
