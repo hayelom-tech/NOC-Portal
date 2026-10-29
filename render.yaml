@@ -1,3 +1,9 @@
+databases:
+  - name: noc-portal-db
+    databaseName: noc_portal
+    user: noc_portal
+    plan: free
+
 services:
   - type: web
     name: noc-portal
@@ -7,11 +13,13 @@ services:
     startCommand: "uvicorn main:app --host 0.0.0.0 --port $PORT --proxy-headers --forwarded-allow-ips '*'"
     envVars:
       - key: PYTHON_VERSION
-        value: 3.12.8
+        value: "3.12.8"
       - key: APP_ENV
         value: production
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: noc-portal-db
+          property: connectionString
       - key: JWT_SECRET_KEY
         sync: false
       - key: INITIAL_ADMIN_USERNAME
@@ -22,7 +30,11 @@ services:
         sync: false
       - key: INITIAL_ADMIN_PASSWORD
         sync: false
+      - key: SENTRY_DSN
+        sync: false
       - key: COOKIE_SECURE
         value: "true"
+      # Set this to the exact hostname Render assigns (e.g. noc-portal.onrender.com).
+      # If Render assigns a different name, update here or in the dashboard and redeploy.
       - key: ALLOWED_HOSTS
-        value: "noc-portal.onrender.com"
+        sync: false
