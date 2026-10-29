@@ -62,9 +62,16 @@ class LoginHandlerTests(unittest.TestCase):
     class FakeDatabase:
         def __init__(self, user):
             self.user = user
+            self.added = []
 
         def scalar(self, _query):
             return self.user
+
+        def add(self, obj):
+            self.added.append(obj)
+
+        def commit(self):
+            return None
 
     @staticmethod
     def request(address="192.0.2.30"):

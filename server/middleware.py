@@ -17,6 +17,8 @@ PUBLIC_PATHS = {
     "/login.html",
     "/api/v1/auth/login",
     "/api/v1/auth/logout",
+    "/api/v1/auth/forgot-password",
+    "/api/v1/auth/reset-password/confirm",
     "/favicon.ico",
     "/healthz",
     "/healthz/live",

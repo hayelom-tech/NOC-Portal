@@ -146,10 +146,26 @@
                             <i id="eyeIcon" class="fa-solid fa-eye text-xs"></i>
                         </button>
                     </div>
+                    <p id="capsWarning" class="hidden text-xs text-amber-400 mt-1.5 flex items-center gap-1.5">
+                        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Caps Lock is on
+                    </p>
                 </div>
 
-                <!-- Error -->
-                <div id="errorBox" class="hidden bg-red-950/60 border border-red-700/40 rounded-xl px-4 py-2.5 flex items-center gap-2">
+                <!-- Remember me + Forgot password -->
+            <div class="flex items-center justify-between -mt-1">
+                <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+                    <input type="checkbox" id="rememberMe" class="rounded border-slate-600 bg-slate-800 text-safaricomGreen focus:ring-safaricomGreen/30">
+                    Remember me
+                </label>
+                <button type="button" id="forgotLink" onclick="openResetModal()"
+                    class="text-xs text-slate-400 hover:text-safaricomGreen transition-colors focus:outline-none focus:underline">
+                    Forgot password?
+                </button>
+            </div>
+
+            <!-- Error -->
+                <div id="errorBox" role="alert" aria-live="assertive"
+                class="hidden bg-red-950/60 border border-red-700/40 rounded-xl px-4 py-2.5 flex items-center gap-2">
                     <i class="fa-solid fa-circle-exclamation text-red-400 text-xs shrink-0"></i>
                     <p class="text-red-400 text-xs font-semibold">Invalid username or password. Try again.</p>
                 </div>
@@ -170,30 +186,45 @@
     <script>
         async function handleLogin(e) {
             e.preventDefault();
-            const username = document.getElementById('username').value.trim().toLowerCase();
-            const password = document.getElementById('password').value;
+            const usernameInput = document.getElementById('username');
+            const passwordInput = document.getElementById('password');
+            const username = usernameInput.value.trim().toLowerCase();
+            const password = passwordInput.value;
             const errorBox = document.getElementById('errorBox');
             const errorText = errorBox.querySelector('p');
             const button = document.getElementById('loginBtn');
+            const btnText = document.getElementById('btnText');
             button.disabled = true;
+            const originalBtn = btnText.textContent;
+            btnText.textContent = 'Signing in…';
             errorBox.classList.add('hidden');
+
             try {
                 const response = await fetch('/api/v1/auth/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ username, password })
                 });
-                const result = await response.json();
+                const result = await response.json().catch(() => ({}));
                 if (!response.ok) {
-                    const detail = Array.isArray(result.detail)
-                        ? result.detail.map(item => item.msg).join('; ')
-                        : result.detail;
+                    let detail = result.detail;
+                    if (Array.isArray(detail)) detail = detail.map(i => i.msg).join('; ');
+                    if (response.status === 429) {
+                        const retry = response.headers.get('Retry-After');
+                        detail = 'Too many attempts. Try again' + (retry ? ' in ' + retry + 's' : ' later') + '.';
+                    }
                     throw new Error(detail || 'Sign-in failed.');
+                }
+                if (document.getElementById('rememberMe').checked) {
+                    localStorage.setItem('nocRememberedUsername', username);
+                } else {
+                    localStorage.removeItem('nocRememberedUsername');
                 }
                 sessionStorage.setItem('nocLoggedIn', 'true');
                 sessionStorage.setItem('nocUsername', result.user.username);
                 sessionStorage.setItem('nocUserRole', result.user.role);
                 sessionStorage.setItem('nocDisplayName', result.user.full_name);
+                btnText.textContent = 'Authenticated — Redirecting…';
                 button.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Authenticated — Redirecting…</span>';
                 window.location.replace('/');
             } catch (error) {
@@ -201,10 +232,11 @@
                 errorBox.classList.remove('hidden');
                 errorBox.classList.add('animate-shake');
                 setTimeout(() => errorBox.classList.remove('animate-shake'), 500);
-                document.getElementById('password').value = '';
-                document.getElementById('password').focus();
+                passwordInput.value = '';
+                passwordInput.focus();
             } finally {
                 button.disabled = false;
+                if (btnText.textContent === 'Signing in…') btnText.textContent = originalBtn;
             }
         }
 
@@ -219,6 +251,150 @@
                 icon.className = 'fa-solid fa-eye text-xs';
             }
         }
+
+        // ─── Reset password modal ────────────────────────────────────────────────
+        function openResetModal() {
+            const modal = document.getElementById('resetModal');
+            modal.classList.remove('hidden');
+            document.body.style.overflow = 'hidden';
+            setTimeout(() => document.getElementById('resetToken').focus(), 50);
+        }
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.add('hidden');
+            document.body.style.overflow = '';
+            document.getElementById('resetForm').reset();
+            document.getElementById('resetError').classList.add('hidden');
+            document.getElementById('resetSuccess').classList.add('hidden');
+        }
+        async function handleRequestReset(e) {
+            e.preventDefault();
+            const ident = document.getElementById('requestIdentifier').value.trim();
+            const statusBox = document.getElementById('requestStatus');
+            const btn = document.getElementById('requestBtn');
+            const btnText = document.getElementById('requestBtnText');
+            statusBox.classList.add('hidden');
+            btn.disabled = true;
+            btnText.textContent = 'Sending…';
+            try {
+                const response = await fetch('/api/v1/auth/forgot-password', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ identifier: ident })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    let detail = result.detail;
+                    if (Array.isArray(detail)) detail = detail.map(i => i.msg).join('; ');
+                    if (response.status === 429) {
+                        const retry = response.headers.get('Retry-After');
+                        detail = 'Too many requests. Try again' + (retry ? ' in ' + retry + 's' : ' later') + '.';
+                    }
+                    throw new Error(detail || 'Request failed.');
+                }
+                statusBox.textContent = result.message || 'If an account exists, a reset link has been sent.';
+                statusBox.classList.remove('hidden');
+                statusBox.classList.remove('text-red-400');
+                statusBox.classList.add('text-emerald-400');
+            } catch (error) {
+                statusBox.textContent = error.message || 'Unable to request reset.';
+                statusBox.classList.remove('hidden');
+                statusBox.classList.remove('text-emerald-400');
+                statusBox.classList.add('text-red-400');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Send reset link';
+            }
+        }
+
+        async function handleReset(e) {
+            e.preventDefault();
+            const token = document.getElementById('resetToken').value.trim();
+            const newPassword = document.getElementById('resetNewPassword').value;
+            const confirmPassword = document.getElementById('resetConfirmPassword').value;
+            const errBox = document.getElementById('resetError');
+            const okBox = document.getElementById('resetSuccess');
+            const btn = document.getElementById('resetBtn');
+            const btnText = document.getElementById('resetBtnText');
+            errBox.classList.add('hidden');
+            okBox.classList.add('hidden');
+
+            if (newPassword !== confirmPassword) {
+                errBox.textContent = 'Passwords do not match.';
+                errBox.classList.remove('hidden');
+                return;
+            }
+            btn.disabled = true;
+            btnText.textContent = 'Resetting…';
+            try {
+                const response = await fetch('/api/v1/auth/reset-password/confirm', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ token, new_password: newPassword })
+                });
+                const result = await response.json().catch(() => ({}));
+                if (!response.ok) {
+                    let detail = result.detail;
+                    if (Array.isArray(detail)) detail = detail.map(i => i.msg).join('; ');
+                    throw new Error(detail || 'Reset failed.');
+                }
+                okBox.textContent = 'Password reset successful. You can now sign in.';
+                okBox.classList.remove('hidden');
+                document.getElementById('resetForm').reset();
+                setTimeout(() => { closeResetModal(); document.getElementById('username').focus(); }, 1500);
+            } catch (error) {
+                errBox.textContent = error.message || 'Unable to reset password.';
+                errBox.classList.remove('hidden');
+            } finally {
+                btn.disabled = false;
+                btnText.textContent = 'Reset password';
+            }
+        }
+
+        // Caps Lock detection
+        (function initCapsLock() {
+            const pw = document.getElementById('password');
+            const warn = document.getElementById('capsWarning');
+            if (!pw || !warn) return;
+            function check(e) {
+                const on = e.getModifierState && e.getModifierState('CapsLock');
+                warn.classList.toggle('hidden', !on);
+            }
+            pw.addEventListener('keydown', check);
+            pw.addEventListener('keyup', check);
+            pw.addEventListener('focus', check);
+        })();
+
+        // Auto-fill remembered username
+        (function initRemembered() {
+            const saved = localStorage.getItem('nocRememberedUsername');
+            if (saved) {
+                const u = document.getElementById('username');
+                if (u) { u.value = saved; document.getElementById('rememberMe').checked = true; }
+            }
+        })();
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const u = document.getElementById('username');
+            if (u && !u.value) u.focus();
+        });
+
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeResetModal();
+        });
+        // Auto-open reset modal if reset_token is in URL (from email link)
+        (function initResetTokenFromUrl() {
+            const params = new URLSearchParams(window.location.search);
+            const token = params.get('reset_token');
+            if (token) {
+                openResetModal();
+                const field = document.getElementById('resetToken');
+                if (field) field.value = token;
+                // Clean URL
+                if (window.history && window.history.replaceState) {
+                    window.history.replaceState({}, '', window.location.pathname);
+                }
+            }
+        })();
 
         // ─── Animated background dots ────────────────────────────────────────────
         (function spawnDots() {
@@ -240,5 +416,60 @@
             }
         })();
     </script>
+    <!-- Reset password modal -->
+    <div id="resetModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeResetModal()"></div>
+        <div class="relative glass-card rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slide-up">
+            <div class="flex items-center justify-between mb-4">
+                <h2 id="resetTitle" class="text-white font-bold text-lg">Reset password</h2>
+                <button type="button" onclick="closeResetModal()" class="text-slate-400 hover:text-white transition-colors" aria-label="Close">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <p class="text-slate-400 text-xs mb-4">
+                Enter your username or email to receive a reset link, or paste a token you already have.
+            </p>
+            <!-- Request reset -->
+            <form id="requestResetForm" class="space-y-3 mb-4 pb-4 border-b border-slate-700/50" onsubmit="handleRequestReset(event)">
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Username or email</label>
+                    <input type="text" id="requestIdentifier" required autocomplete="username"
+                        class="input-field w-full rounded-xl px-4 py-3 text-sm" placeholder="your.username or you@example.com">
+                </div>
+                <div id="requestStatus" role="status" aria-live="polite" class="hidden text-xs font-semibold"></div>
+                <button type="submit" id="requestBtn" class="w-full py-2.5 rounded-xl border border-slate-600 text-slate-200 font-semibold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-envelope"></i>
+                    <span id="requestBtnText">Send reset link</span>
+                </button>
+            </form>
+            <!-- Reset with token -->
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Reset token</label>
+                    <input type="text" id="resetToken" required autocomplete="off"
+                        class="input-field w-full rounded-xl px-4 py-3 text-sm font-mono"
+                        placeholder="Paste the token from your administrator">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">New password</label>
+                    <input type="password" id="resetNewPassword" required minlength="12" maxlength="72" autocomplete="new-password"
+                        class="input-field w-full rounded-xl px-4 py-3 text-sm" placeholder="At least 12 characters">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Confirm password</label>
+                    <input type="password" id="resetConfirmPassword" required minlength="12" maxlength="72" autocomplete="new-password"
+                        class="input-field w-full rounded-xl px-4 py-3 text-sm" placeholder="Repeat new password">
+                </div>
+                <div id="resetError" role="alert" aria-live="assertive"
+                    class="hidden bg-red-950/60 border border-red-700/40 rounded-xl px-4 py-2.5 text-red-400 text-xs font-semibold"></div>
+                <div id="resetSuccess" role="status" aria-live="polite"
+                    class="hidden bg-emerald-950/60 border border-emerald-700/40 rounded-xl px-4 py-2.5 text-emerald-400 text-xs font-semibold"></div>
+                <button type="submit" id="resetBtn" class="btn-login w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2">
+                    <i class="fa-solid fa-key"></i>
+                    <span id="resetBtnText">Reset password</span>
+                </button>
+            </form>
+        </div>
+    </div>
+
 </body>
 </html>

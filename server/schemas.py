@@ -338,6 +338,10 @@ class AvatarUpdate(BaseModel):
     avatar_key: str = Field(min_length=1, max_length=20)
 
 
+class ForgotPasswordRequest(BaseModel):
+    identifier: str = Field(min_length=1, max_length=254)
+
+
 class PasswordResetRequest(BaseModel):
     username: str = Field(min_length=1, max_length=80)
 

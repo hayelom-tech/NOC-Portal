@@ -218,7 +218,20 @@
                     } catch (error) { message(error.message, true); }
                 });
 
-                actions.append(save, deactivate, remove);
+                const resetPw = el('button', 'Reset PW', 'rounded bg-indigo-700 px-3 py-1');
+                resetPw.addEventListener('click', async () => {
+                    if (!confirm(`Generate a password reset token for ${user.username}?`)) return;
+                    try {
+                        const result = await api('/api/v1/auth/reset-password', {
+                            method: 'POST', headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ username: user.username })
+                        });
+                        window.prompt(`Reset token for ${user.username} (expires in ${result.expires_in_minutes} min). Copy and share with the user:`, result.reset_token);
+                        message(`Reset token generated for ${user.username}.`);
+                    } catch (error) { message(error.message, true); }
+                });
+
+                actions.append(save, deactivate, remove, resetPw);
                 row.append(name, email, roleCell, contentCell, activeCell, actions);
                 body.append(row);
             }

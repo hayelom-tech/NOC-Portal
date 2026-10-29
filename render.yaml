@@ -38,3 +38,17 @@ services:
       # If Render assigns a different name, update here or in the dashboard and redeploy.
       - key: ALLOWED_HOSTS
         sync: false
+      - key: APP_BASE_URL
+        value: "https://noc-portal.onrender.com"
+      - key: SMTP_HOST
+        sync: false
+      - key: SMTP_PORT
+        value: "587"
+      - key: SMTP_USERNAME
+        sync: false
+      - key: SMTP_PASSWORD
+        sync: false
+      - key: SMTP_FROM
+        sync: false
+      - key: SMTP_USE_TLS
+        value: "true"

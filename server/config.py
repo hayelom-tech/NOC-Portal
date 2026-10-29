@@ -67,6 +67,48 @@ def validate_runtime_config() -> None:
         raise RuntimeError("INITIAL_ADMIN_PASSWORD must be at least 16 characters in production.")
 
 
+def smtp_host() -> str:
+    return os.getenv("SMTP_HOST", "").strip()
+
+
+def smtp_port() -> int:
+    try:
+        return int(os.getenv("SMTP_PORT", "587"))
+    except ValueError:
+        return 587
+
+
+def smtp_username() -> str:
+    return os.getenv("SMTP_USERNAME", "").strip()
+
+
+def smtp_password() -> str:
+    return os.getenv("SMTP_PASSWORD", "")
+
+
+def smtp_from() -> str:
+    value = os.getenv("SMTP_FROM", "").strip()
+    return value or smtp_username()
+
+
+def smtp_use_tls() -> bool:
+    return os.getenv("SMTP_USE_TLS", "true").strip().lower() not in {"false", "0", "no"}
+
+
+def smtp_use_ssl() -> bool:
+    return os.getenv("SMTP_USE_SSL", "false").strip().lower() in {"true", "1", "yes"}
+
+
+def app_base_url() -> str:
+    value = os.getenv("APP_BASE_URL", "").strip().rstrip("/")
+    if value:
+        return value
+    hosts = allowed_hosts()
+    if hosts and hosts[0] not in {"localhost", "127.0.0.1", "testserver"}:
+        return f"https://{hosts[0]}"
+    return "http://127.0.0.1:8000"
+
+
 MAX_UPLOAD_BYTES = 10 * 1024 * 1024
 ACCESS_TOKEN_MINUTES = 30
 COOKIE_NAME = "noc_access_token"
