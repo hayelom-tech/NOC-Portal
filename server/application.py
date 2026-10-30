@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 
 from server.controllers.auth import router as auth_router
 from server.controllers.content import router as content_router
+from server.controllers.incidents import router as incidents_router
 from server.controllers.pages import router as pages_router
 from server.controllers.shifts import router as shifts_router
 from server.controllers.uploads import router as uploads_router
@@ -32,6 +33,7 @@ def create_app() -> FastAPI:
         users_router,
         shifts_router,
         content_router,
+        incidents_router,
         uploads_router,
         pages_router,
     ):

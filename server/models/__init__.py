@@ -430,13 +430,13 @@ class Incident(Base):
     id: Mapped[int] = mapped_column(primary_key=True)
     reference: Mapped[str] = mapped_column(String(40), unique=True, index=True)
     priority: Mapped[IncidentPriority] = mapped_column(
-        Enum(IncidentPriority, name="incident_priority"), default=IncidentPriority.p2, index=True
+        Enum(IncidentPriority, name="incident_priority", values_callable=lambda x: [e.value for e in x]), default=IncidentPriority.p2, index=True
     )
     status: Mapped[IncidentStatus] = mapped_column(
         Enum(IncidentStatus, name="incident_status"), default=IncidentStatus.ongoing, index=True
     )
     region: Mapped[CMRegion | None] = mapped_column(
-        Enum(CMRegion, name="cm_region"), nullable=True, index=True
+        Enum(CMRegion, name="cm_region", values_callable=lambda x: [e.value for e in x]), nullable=True, index=True
     )
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     business_impact: Mapped[str | None] = mapped_column(String(255), nullable=True)
@@ -488,7 +488,7 @@ class ChangeRequest(Base):
         Enum(ChangeRisk, name="change_risk"), default=ChangeRisk.medium
     )
     region: Mapped[CMRegion | None] = mapped_column(
-        Enum(CMRegion, name="cm_region"), nullable=True, index=True
+        Enum(CMRegion, name="cm_region", values_callable=lambda x: [e.value for e in x]), nullable=True, index=True
     )
     window_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
     window_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
