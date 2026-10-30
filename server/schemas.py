@@ -3,7 +3,17 @@ from datetime import date, datetime, time
 from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
 
-from server.models import KnowledgeDomain, L2Domain, ShiftName, UserRole
+from server.models import (
+    ChangeRisk,
+    ChangeStatus,
+    CMRegion,
+    IncidentPriority,
+    IncidentStatus,
+    KnowledgeDomain,
+    L2Domain,
+    ShiftName,
+    UserRole,
+)
 from server.domain.regions import REGION_NAMES, canonical_region_name
 
 
@@ -349,3 +359,103 @@ class PasswordResetRequest(BaseModel):
 class PasswordResetConfirm(BaseModel):
     token: str = Field(min_length=1)
     new_password: str = Field(min_length=12, max_length=72)
+
+
+# ── Incident Schemas ────────────────────────────────────────────────────────
+
+class IncidentBase(BaseModel):
+    reference: str = Field(min_length=1, max_length=40)
+    priority: IncidentPriority = IncidentPriority.p2
+    status: IncidentStatus = IncidentStatus.ongoing
+    region: CMRegion | None = None
+    description: str | None = None
+    business_impact: str | None = Field(default=None, max_length=255)
+    system_impact: str | None = Field(default=None, max_length=255)
+    incident_owner: str | None = Field(default=None, max_length=160)
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    mttr: str | None = Field(default=None, max_length=80)
+    reported_by: str | None = Field(default=None, max_length=160)
+    support_group: str | None = Field(default=None, max_length=160)
+    problem_statement: str | None = None
+    update: str | None = None
+    root_cause: str | None = None
+    resolution: str | None = None
+    resolved_at: datetime | None = None
+
+
+class IncidentCreate(IncidentBase):
+    pass
+
+
+class IncidentUpdate(BaseModel):
+    priority: IncidentPriority | None = None
+    status: IncidentStatus | None = None
+    region: CMRegion | None = None
+    description: str | None = None
+    business_impact: str | None = Field(default=None, max_length=255)
+    system_impact: str | None = Field(default=None, max_length=255)
+    incident_owner: str | None = Field(default=None, max_length=160)
+    start_time: datetime | None = None
+    end_time: datetime | None = None
+    mttr: str | None = Field(default=None, max_length=80)
+    reported_by: str | None = Field(default=None, max_length=160)
+    support_group: str | None = Field(default=None, max_length=160)
+    problem_statement: str | None = None
+    update: str | None = None
+    root_cause: str | None = None
+    resolution: str | None = None
+    resolved_at: datetime | None = None
+
+
+class IncidentRead(IncidentBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    created_by_id: int | None = None
+    created_by_name: str | None = None
+
+
+# ── Change Request Schemas ──────────────────────────────────────────────────
+
+class ChangeRequestBase(BaseModel):
+    cr_id: str = Field(min_length=1, max_length=40)
+    title: str = Field(min_length=1, max_length=255)
+    description: str | None = None
+    domain: str = Field(min_length=1, max_length=50)
+    status: ChangeStatus = ChangeStatus.scheduled
+    risk_level: ChangeRisk = ChangeRisk.medium
+    region: CMRegion | None = None
+    window_start: datetime | None = None
+    window_end: datetime | None = None
+    lead_engineer: str | None = Field(default=None, max_length=160)
+    approver: str | None = Field(default=None, max_length=160)
+
+
+class ChangeRequestCreate(ChangeRequestBase):
+    pass
+
+
+class ChangeRequestUpdate(BaseModel):
+    title: str | None = Field(default=None, min_length=1, max_length=255)
+    description: str | None = None
+    domain: str | None = Field(default=None, min_length=1, max_length=50)
+    status: ChangeStatus | None = None
+    risk_level: ChangeRisk | None = None
+    region: CMRegion | None = None
+    window_start: datetime | None = None
+    window_end: datetime | None = None
+    lead_engineer: str | None = Field(default=None, max_length=160)
+    approver: str | None = Field(default=None, max_length=160)
+
+
+class ChangeRequestRead(ChangeRequestBase):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    updated_at: datetime
+    created_by_id: int | None = None
+    created_by_name: str | None = None

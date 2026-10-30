@@ -99,6 +99,8 @@ function activateTab(tabName) {
     const sectionTitles = {
         home: 'Home',
         handover: 'Shift Handover',
+        incident: 'Incident Management',
+        change: 'Change Management',
         l2: 'L2 Support',
         process: 'NOC Process',
         knowledge: 'Knowledge Hub'
@@ -129,10 +131,25 @@ function activateTab(tabName) {
         loadProcessDocuments().catch(error => setStatus(error.message, true));
     }
     const domainNav = document.getElementById('knowledgeDomainNav');
-    domainNav.classList.toggle('is-expanded', knowledgeActive);
-    domainNav.setAttribute('aria-hidden', String(!knowledgeActive));
-    document.getElementById('knowledgeTab').setAttribute('aria-expanded', String(knowledgeActive));
-    document.getElementById('knowledgeChevron').classList.toggle('rotate-180', knowledgeActive);
+    if (domainNav) {
+        domainNav.classList.toggle('is-expanded', knowledgeActive);
+        domainNav.setAttribute('aria-hidden', String(!knowledgeActive));
+        const kTab = document.getElementById('knowledgeTab');
+        if (kTab) kTab.setAttribute('aria-expanded', String(knowledgeActive));
+        const kChev = document.getElementById('knowledgeChevron');
+        if (kChev) kChev.classList.toggle('rotate-180', knowledgeActive);
+    }
+
+    const incidentActive = tabName === 'incident';
+    const incidentNav = document.getElementById('incidentSubNav');
+    if (incidentNav) {
+        incidentNav.classList.toggle('is-expanded', incidentActive);
+        incidentNav.setAttribute('aria-hidden', String(!incidentActive));
+        const iTab = document.getElementById('incidentTab');
+        if (iTab) iTab.setAttribute('aria-expanded', String(incidentActive));
+        const iChev = document.getElementById('incidentChevron');
+        if (iChev) iChev.classList.toggle('rotate-180', incidentActive);
+    }
 }
 
 function configureTabNavigation() {
@@ -150,13 +167,25 @@ function configureTabNavigation() {
             const domainNav = document.getElementById('knowledgeDomainNav');
             const isOpenKnowledgeTab = button.dataset.tab === 'knowledge'
                 && button.getAttribute('aria-selected') === 'true'
-                && domainNav.classList.contains('is-expanded');
+                && domainNav && domainNav.classList.contains('is-expanded');
             if (isOpenKnowledgeTab) {
                 domainNav.classList.remove('is-expanded');
                 domainNav.setAttribute('aria-hidden', 'true');
                 button.setAttribute('aria-expanded', 'false');
                 document.getElementById('knowledgeChevron').classList.remove('rotate-180');
                 openKnowledgeDashboardView();
+                return;
+            }
+            const incidentNav = document.getElementById('incidentSubNav');
+            const isOpenIncidentTab = button.dataset.tab === 'incident'
+                && button.getAttribute('aria-selected') === 'true'
+                && incidentNav && incidentNav.classList.contains('is-expanded');
+            if (isOpenIncidentTab) {
+                incidentNav.classList.remove('is-expanded');
+                incidentNav.setAttribute('aria-hidden', 'true');
+                button.setAttribute('aria-expanded', 'false');
+                const iChev = document.getElementById('incidentChevron');
+                if (iChev) iChev.classList.remove('rotate-180');
                 return;
             }
             window.location.hash = button.dataset.tab;
@@ -197,6 +226,55 @@ function configureTabNavigation() {
         openKnowledgePostsView();
         loadLibrary().catch(error => setStatus(error.message, true));
     });
+
+    document.querySelectorAll('[data-incident-sub]').forEach(button => {
+        button.addEventListener('click', (event) => {
+            event.stopPropagation();
+            const filter = button.dataset.incidentSub;
+            window.location.hash = 'incident';
+            activateTab('incident');
+            filterIncidentView(filter);
+        });
+    });
+
+    document.querySelectorAll('[data-incident-pill]').forEach(button => {
+        button.addEventListener('click', () => {
+            filterIncidentView(button.dataset.incidentPill);
+        });
+    });
+}
+
+function filterIncidentView(filter = 'all') {
+    document.querySelectorAll('[data-incident-sub]').forEach(btn => {
+        const active = btn.dataset.incidentSub === filter;
+        btn.classList.toggle('bg-slate-700/80', active);
+        btn.classList.toggle('text-white', active);
+        btn.classList.toggle('font-semibold', active);
+        if (active) btn.setAttribute('aria-current', 'page');
+        else btn.removeAttribute('aria-current');
+    });
+
+    document.querySelectorAll('[data-incident-pill]').forEach(pill => {
+        const active = pill.dataset.incidentPill === filter;
+        pill.classList.toggle('ring-2', active);
+        pill.classList.toggle('ring-emerald-400', active);
+    });
+
+    document.querySelectorAll('[data-incident-status]').forEach(item => {
+        if (filter === 'all') {
+            item.classList.remove('hidden');
+        } else {
+            const matches = item.dataset.incidentStatus === filter;
+            item.classList.toggle('hidden', !matches);
+        }
+    });
+
+    const titleEl = document.getElementById('incidentViewTitle');
+    if (titleEl) {
+        if (filter === 'ongoing') titleEl.textContent = 'Incident Management — Ongoing Incidents';
+        else if (filter === 'closed') titleEl.textContent = 'Incident Management — Closed Incidents';
+        else titleEl.textContent = 'Incident Management';
+    }
 }
 
 function errorMessage(detail, fallback) {

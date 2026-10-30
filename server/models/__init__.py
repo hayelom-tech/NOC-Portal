@@ -60,6 +60,44 @@ class L2Domain(str, enum.Enum):
     cs_core_volte = "cs_core_volte"
 
 
+class CMRegion(str, enum.Enum):
+    east_1 = "East 1"
+    east_2 = "East 2"
+    west = "West"
+    north_west = "North West"
+    north_east = "North East"
+    north = "North"
+    afar = "Afar"
+
+
+class IncidentStatus(str, enum.Enum):
+    ongoing = "ongoing"
+    resolved = "resolved"
+    closed = "closed"
+
+
+class IncidentPriority(str, enum.Enum):
+    p1 = "P1"
+    p2 = "P2"
+    p3 = "P3"
+    p4 = "P4"
+    p5 = "P5"
+
+
+class ChangeStatus(str, enum.Enum):
+    in_progress = "in_progress"
+    scheduled = "scheduled"
+    completed = "completed"
+    cancelled = "cancelled"
+    rollback = "rollback"
+
+
+class ChangeRisk(str, enum.Enum):
+    low = "low"
+    medium = "medium"
+    high = "high"
+
+
 class User(Base):
     __tablename__ = "users"
     __table_args__ = (UniqueConstraint("username", name="uq_users_username"),)
@@ -381,3 +419,90 @@ class L2Roster(Base):
     updated_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=utc_now, onupdate=utc_now
     )
+
+
+class Incident(Base):
+    __tablename__ = "incidents"
+    __table_args__ = (
+        Index("ix_incidents_status_priority", "status", "priority"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    reference: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    priority: Mapped[IncidentPriority] = mapped_column(
+        Enum(IncidentPriority, name="incident_priority"), default=IncidentPriority.p2, index=True
+    )
+    status: Mapped[IncidentStatus] = mapped_column(
+        Enum(IncidentStatus, name="incident_status"), default=IncidentStatus.ongoing, index=True
+    )
+    region: Mapped[CMRegion | None] = mapped_column(
+        Enum(CMRegion, name="cm_region"), nullable=True, index=True
+    )
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    business_impact: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    system_impact: Mapped[str | None] = mapped_column(String(255), nullable=True)
+    incident_owner: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    start_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    end_time: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    mttr: Mapped[str | None] = mapped_column(String(80), nullable=True)
+    reported_by: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    support_group: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    problem_statement: Mapped[str | None] = mapped_column(Text, nullable=True)
+    update: Mapped[str | None] = mapped_column(Text, nullable=True)
+    root_cause: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolution: Mapped[str | None] = mapped_column(Text, nullable=True)
+    resolved_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+    created_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    created_by: Mapped["User | None"] = relationship()
+
+    @property
+    def created_by_name(self) -> str | None:
+        return self.created_by.full_name if self.created_by else None
+
+    @property
+    def created_by_name(self) -> str | None:
+        return self.created_by.full_name if self.created_by else None
+
+
+class ChangeRequest(Base):
+    __tablename__ = "change_requests"
+    __table_args__ = (
+        Index("ix_change_requests_status_risk", "status", "risk_level"),
+    )
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    cr_id: Mapped[str] = mapped_column(String(40), unique=True, index=True)
+    title: Mapped[str] = mapped_column(String(255))
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    domain: Mapped[str] = mapped_column(String(50), index=True)  # Core, TX, RAN, Power
+    status: Mapped[ChangeStatus] = mapped_column(
+        Enum(ChangeStatus, name="change_status"), default=ChangeStatus.scheduled, index=True
+    )
+    risk_level: Mapped[ChangeRisk] = mapped_column(
+        Enum(ChangeRisk, name="change_risk"), default=ChangeRisk.medium
+    )
+    region: Mapped[CMRegion | None] = mapped_column(
+        Enum(CMRegion, name="cm_region"), nullable=True, index=True
+    )
+    window_start: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    window_end: Mapped[datetime | None] = mapped_column(DateTime(timezone=True), nullable=True)
+    lead_engineer: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    approver: Mapped[str | None] = mapped_column(String(160), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), default=utc_now)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=utc_now, onupdate=utc_now
+    )
+    created_by_id: Mapped[int | None] = mapped_column(
+        ForeignKey("users.id", ondelete="SET NULL"), nullable=True
+    )
+    created_by: Mapped["User | None"] = relationship()
+
+    @property
+    def created_by_name(self) -> str | None:
+        return self.created_by.full_name if self.created_by else None

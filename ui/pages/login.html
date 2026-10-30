@@ -12,67 +12,255 @@
         }
     </script>
     <style>
-        @keyframes pulse-ring {
-            0%   { transform: scale(0.95); opacity: 0.5; }
-            70%  { transform: scale(1.05); opacity: 0.2; }
-            100% { transform: scale(0.95); opacity: 0.5; }
-        }
-        @keyframes float-dot {
-            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.15; }
-            33%       { transform: translateY(-30px) translateX(15px); opacity: 0.35; }
-            66%       { transform: translateY(15px) translateX(-10px); opacity: 0.2; }
-        }
         @keyframes slide-up { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
         @keyframes shake { 0%,100%{transform:translateX(0)} 20%,60%{transform:translateX(-6px)} 40%,80%{transform:translateX(6px)} }
+        @keyframes float-dot {
+            0%, 100% { transform: translateY(0px) translateX(0px); opacity: 0.08; }
+            33%       { transform: translateY(-25px) translateX(12px); opacity: 0.18; }
+            66%       { transform: translateY(12px) translateX(-8px); opacity: 0.1; }
+        }
 
-        .dot { position:absolute; border-radius:50%; animation: float-dot linear infinite; }
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            background-color: #0d1117;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        .dot { position:absolute; border-radius:50%; animation: float-dot linear infinite; pointer-events:none; }
         .animate-slide-up { animation: slide-up 0.5s ease both; }
         .animate-shake { animation: shake 0.4s ease; }
 
-        .glass-card {
-            background: rgba(15,23,42,0.85);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border: 1px solid rgba(255,255,255,0.08);
+        /* top-right link */
+        .top-link {
+            position: fixed;
+            top: 16px;
+            right: 24px;
+            font-size: 12px;
+            color: #8b949e;
+            z-index: 10;
+        }
+        .top-link a {
+            color: #58a6ff;
+            text-decoration: none;
+            border: 1px solid #30363d;
+            padding: 5px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            transition: background 0.2s, color 0.2s;
+        }
+        .top-link a:hover { background: #161b22; color: #79c0ff; }
+
+        /* card */
+        .login-card {
+            background: rgba(22, 27, 34, 0.92);
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 32px 32px 28px;
+            width: 340px;
+            box-shadow: 0 8px 40px rgba(0,0,0,0.6);
         }
 
-        .input-field {
-            background: rgba(30,41,59,0.8);
-            border: 1px solid rgba(100,116,139,0.3);
-            color: #e2e8f0;
+        .login-title {
+            text-align: center;
+            font-size: 22px;
+            font-weight: 300;
+            color: #e6edf3;
+            margin-bottom: 24px;
+            letter-spacing: 0.5px;
+        }
+
+        .field-label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            color: #8b949e;
+            text-transform: uppercase;
+            letter-spacing: 0.6px;
+            margin-bottom: 6px;
+        }
+
+        .field-wrap { margin-bottom: 14px; position: relative; }
+        .field-input {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #e6edf3;
+            font-size: 13px;
+            padding: 9px 36px 9px 12px;
+            outline: none;
             transition: border-color 0.2s, box-shadow 0.2s;
         }
-        .input-field:focus {
-            outline: none;
-            border-color: #00B050;
-            box-shadow: 0 0 0 3px rgba(0,176,80,0.15);
+        .field-input:focus {
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88,166,255,0.12);
         }
-        .input-field::placeholder { color: #475569; }
+        .field-input::placeholder { color: #484f58; }
+
+        .eye-btn {
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            cursor: pointer;
+            color: #484f58;
+            padding: 0;
+            font-size: 13px;
+            line-height: 1;
+        }
+        .eye-btn:hover { color: #8b949e; }
+
+        .forgot-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 18px;
+            margin-top: -6px;
+        }
+        .remember-label { font-size: 12px; color: #8b949e; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+        .remember-label input { accent-color: #58a6ff; }
+        .forgot-link { font-size: 12px; color: #58a6ff; text-decoration: none; background: none; border: none; cursor: pointer; padding: 0; }
+        .forgot-link:hover { text-decoration: underline; color: #79c0ff; }
+
+        .error-box {
+            background: rgba(248,81,73,0.12);
+            border: 1px solid rgba(248,81,73,0.4);
+            border-radius: 6px;
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #f85149;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .error-box.hidden { display: none !important; }
+
+        .caps-warn { font-size: 11px; color: #d29922; margin-top: 5px; display: none; align-items: center; gap: 5px; }
+        .caps-warn.visible { display: flex; }
 
         .btn-login {
-            background: linear-gradient(135deg, #00B050 0%, #009040 100%);
-            transition: all 0.2s;
+            width: 100%;
+            padding: 10px;
+            background: #f0883e;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            letter-spacing: 1.5px;
+            text-transform: uppercase;
+            cursor: pointer;
+            transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
             position: relative;
             overflow: hidden;
         }
-        .btn-login:hover { transform: translateY(-1px); box-shadow: 0 8px 25px rgba(0,176,80,0.35); }
+        .btn-login:hover { background: #e07830; box-shadow: 0 4px 20px rgba(240,136,62,0.4); transform: translateY(-1px); }
         .btn-login:active { transform: translateY(0); }
-        .btn-login::after {
-            content: '';
-            position: absolute;
-            inset: 0;
-            background: linear-gradient(135deg, rgba(255,255,255,0.15) 0%, transparent 50%);
-            pointer-events: none;
-        }
+        .btn-login:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
 
-        .cred-card {
-            background: rgba(30,41,59,0.6);
-            border: 1px solid rgba(100,116,139,0.2);
-            transition: border-color 0.2s, background 0.2s;
-            cursor: pointer;
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin: 20px 0;
         }
-        .cred-card:hover { border-color: rgba(0,176,80,0.4); background: rgba(30,41,59,0.9); }
+        .divider hr { flex: 1; border: none; border-top: 1px solid #21262d; }
+        .divider span { font-size: 11px; color: #484f58; white-space: nowrap; }
+
+        .social-row { display: flex; gap: 10px; }
+        .social-btn {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            padding: 9px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #8b949e;
+            font-size: 12px;
+            cursor: pointer;
+            text-decoration: none;
+            transition: background 0.2s, border-color 0.2s, color 0.2s;
+        }
+        .social-btn:hover { background: #1c2128; border-color: #484f58; color: #e6edf3; }
+        .social-btn i { font-size: 14px; }
+        .social-btn .g-icon { color: #ea4335; }
+        .social-btn .fb-icon { color: #1877f2; }
+
+        .page-footer { text-align: center; font-size: 10px; color: #30363d; margin-top: 20px; }
+
+        /* modal inputs */
+        .glass-input {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #e6edf3;
+            font-size: 13px;
+            padding: 9px 12px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .glass-input:focus { border-color: #58a6ff; box-shadow: 0 0 0 3px rgba(88,166,255,0.12); }
+        .glass-input::placeholder { color: #484f58; }
+
+        /* modal */
+        .modal-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 10px;
+            padding: 24px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 16px 60px rgba(0,0,0,0.7);
+        }
+        .modal-title { color: #e6edf3; font-weight: 600; font-size: 16px; }
+        .modal-sub { color: #8b949e; font-size: 12px; margin-top: 6px; margin-bottom: 16px; }
+        .modal-label { display: block; font-size: 11px; font-weight: 600; color: #8b949e; text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 5px; }
+        .modal-field { margin-bottom: 12px; }
+        .btn-secondary {
+            width: 100%;
+            padding: 9px;
+            background: transparent;
+            border: 1px solid #30363d;
+            border-radius: 6px;
+            color: #e6edf3;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-secondary:hover { background: #21262d; border-color: #484f58; }
+        .btn-reset {
+            width: 100%;
+            padding: 10px;
+            background: #f0883e;
+            border: none;
+            border-radius: 6px;
+            color: #fff;
+            font-size: 13px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: background 0.2s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .btn-reset:hover { background: #e07830; }
+        .btn-reset:disabled { opacity: 0.6; cursor: not-allowed; }
+        .reset-error { display: none; background: rgba(248,81,73,0.12); border: 1px solid rgba(248,81,73,0.4); border-radius: 6px; padding: 9px 12px; font-size: 12px; color: #f85149; margin-bottom: 10px; }
+        .reset-error.visible { display: block; }
+        .reset-ok { display: none; background: rgba(63,185,80,0.12); border: 1px solid rgba(63,185,80,0.4); border-radius: 6px; padding: 9px 12px; font-size: 12px; color: #3fb950; margin-bottom: 10px; }
+        .reset-ok.visible { display: block; }
     </style>
+
     <script>
         fetch('/api/v1/auth/me')
             .then(response => {
@@ -88,99 +276,91 @@
             })
             .catch(() => {});
     </script>
+
 </head>
-<body class="min-h-screen flex items-center justify-center relative overflow-hidden" style="background: linear-gradient(135deg, #020818 0%, #0a1628 40%, #071220 100%);">
+<body style="margin:0; min-height:100vh; background-color:#0d1117; display:flex; flex-direction:column; align-items:center; justify-content:center; position:relative; overflow:hidden;">
 
     <!-- Animated background dots -->
     <div id="bgDots" aria-hidden="true"></div>
 
-    <!-- Glowing orbs -->
-    <div class="absolute w-96 h-96 rounded-full pointer-events-none" style="background:radial-gradient(circle,rgba(0,176,80,0.12) 0%,transparent 70%); top:-10%; left:-10%;"></div>
-    <div class="absolute w-80 h-80 rounded-full pointer-events-none" style="background:radial-gradient(circle,rgba(0,100,200,0.1) 0%,transparent 70%); bottom:-5%; right:-5%;"></div>
+    <!-- Top-right: Create account link -->
+    <div class="top-link">
+        Don't have an account? <a href="#">Create your account</a>
+    </div>
 
-    <!-- Login Card -->
-    <div class="relative z-10 w-full max-w-md px-4 animate-slide-up">
-        <div class="glass-card rounded-3xl p-8 shadow-2xl">
-
-            <!-- Logo & Brand -->
-            <div class="text-center mb-8">
-                <div class="inline-flex items-center justify-center w-16 h-16 rounded-2xl mb-4" style="background:linear-gradient(135deg,#00B050,#007030);">
-                    <i class="fa-solid fa-tower-broadcast text-white text-2xl"></i>
-                </div>
-                <div class="flex items-center justify-center gap-2 mb-1">
-                    <span class="text-safaricomRed text-2xl font-black">●</span>
-                    <span class="text-white text-2xl font-black tracking-tight">Safaricom</span>
-                    <span class="text-slate-400 text-sm font-normal border-l border-slate-700 pl-2">Ethiopia</span>
-                </div>
-                <h1 class="text-slate-300 text-sm font-semibold tracking-widest uppercase">Network Operations Center</h1>
-                <p class="text-slate-500 text-xs mt-1">Restricted Access — Authorized Personnel Only</p>
+    <!-- Safaricom Logo (top of page, matches second image) -->
+    <div class="animate-slide-up" style="position:relative;z-index:10;text-align:center;margin-bottom:28px;user-select:none;">
+        <!-- Logo mark + wordmark row -->
+        <div style="display:inline-flex;align-items:center;gap:4px;">
+            <!-- Red swoosh ellipse -->
+            <svg width="54" height="54" viewBox="0 0 54 54" fill="none" xmlns="http://www.w3.org/2000/svg" style="flex-shrink:0;">
+                <ellipse cx="27" cy="27" rx="26" ry="26" fill="none"/>
+                <path d="M6 27 C6 14, 20 4, 34 8 C44 11, 50 20, 46 30 C42 40, 28 46, 16 40 C8 36, 4 32, 6 27Z"
+                      fill="none" stroke="#e8002d" stroke-width="5" stroke-linecap="round"/>
+            </svg>
+            <!-- Wordmark -->
+            <div style="display:flex;flex-direction:column;align-items:flex-start;line-height:1;">
+                <span style="font-size:36px;font-weight:800;color:#4caf50;letter-spacing:-0.5px;font-family:'Segoe UI',sans-serif;">Safaricom</span>
+                <span style="font-size:14px;font-weight:600;color:#4caf50;letter-spacing:1px;font-family:'Nyala','Ebrima','Segoe UI',sans-serif;">ሳፋሪኮም</span>
             </div>
+        </div>
+        <!-- Divider line -->
+        <div style="margin-top:18px;height:1px;background:linear-gradient(to right,transparent,#2a2a2a,transparent);"></div>
+    </div>
 
-            <!-- Login Form -->
-            <form id="loginForm" class="space-y-4" onsubmit="handleLogin(event)">
-                <!-- Username -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Username</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
-                            <i class="fa-solid fa-user text-xs"></i>
-                        </span>
-                        <input type="text" id="username" autocomplete="username"
-                            class="input-field w-full rounded-xl pl-10 pr-4 py-3 text-sm"
-                            placeholder="Enter username" required>
-                    </div>
+    <!-- Login card wrapper -->
+    <div class="animate-slide-up" style="position:relative; z-index:10; width:100%; max-width:380px; padding:0 16px;">
+
+        <div class="login-card">
+            <h1 class="login-title">Login</h1>
+
+            <form id="loginForm" onsubmit="handleLogin(event)">
+
+                <!-- Email / Username -->
+                <div class="field-wrap">
+                    <label class="field-label">Email Address</label>
+                    <input type="text" id="username" autocomplete="username"
+                        class="field-input" placeholder="info@example.com" required>
                 </div>
 
                 <!-- Password -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Password</label>
-                    <div class="relative">
-                        <span class="absolute inset-y-0 left-0 pl-3.5 flex items-center text-slate-500 pointer-events-none">
-                            <i class="fa-solid fa-lock text-xs"></i>
-                        </span>
-                        <input type="password" id="password" autocomplete="current-password"
-                            class="input-field w-full rounded-xl pl-10 pr-12 py-3 text-sm"
-                            placeholder="Enter password" required>
-                        <button type="button" onclick="togglePassword()" tabindex="-1"
-                            class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300 transition-colors">
-                            <i id="eyeIcon" class="fa-solid fa-eye text-xs"></i>
-                        </button>
+                <div class="field-wrap">
+                    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:6px;">
+                        <label class="field-label" style="margin-bottom:0;">Password</label>
+                        <button type="button" class="forgot-link" onclick="openResetModal()">Forgot Password?</button>
                     </div>
-                    <p id="capsWarning" class="hidden text-xs text-amber-400 mt-1.5 flex items-center gap-1.5">
-                        <i class="fa-solid fa-triangle-exclamation text-[10px]"></i> Caps Lock is on
-                    </p>
+                    <input type="password" id="password" autocomplete="current-password"
+                        class="field-input" placeholder="Enter your password" required>
+                    <button type="button" class="eye-btn" onclick="togglePassword()" tabindex="-1">
+                        <i id="eyeIcon" class="fa-solid fa-eye"></i>
+                    </button>
+                    <div id="capsWarning" class="caps-warn">
+                        <i class="fa-solid fa-triangle-exclamation"></i> Caps Lock is on
+                    </div>
                 </div>
 
-                <!-- Remember me + Forgot password -->
-            <div class="flex items-center justify-between -mt-1">
-                <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
-                    <input type="checkbox" id="rememberMe" class="rounded border-slate-600 bg-slate-800 text-safaricomGreen focus:ring-safaricomGreen/30">
-                    Remember me
-                </label>
-                <button type="button" id="forgotLink" onclick="openResetModal()"
-                    class="text-xs text-slate-400 hover:text-safaricomGreen transition-colors focus:outline-none focus:underline">
-                    Forgot password?
-                </button>
-            </div>
+                <!-- Remember me -->
+                <div class="forgot-row">
+                    <label class="remember-label">
+                        <input type="checkbox" id="rememberMe"> Remember me
+                    </label>
+                </div>
 
-            <!-- Error -->
-                <div id="errorBox" role="alert" aria-live="assertive"
-                class="hidden bg-red-950/60 border border-red-700/40 rounded-xl px-4 py-2.5 flex items-center gap-2">
-                    <i class="fa-solid fa-circle-exclamation text-red-400 text-xs shrink-0"></i>
-                    <p class="text-red-400 text-xs font-semibold">Invalid username or password. Try again.</p>
+                <!-- Error -->
+                <div id="errorBox" class="error-box hidden" role="alert" aria-live="assertive">
+                    <i class="fa-solid fa-circle-exclamation"></i>
+                    <span id="errorText">Invalid username or password. Try again.</span>
                 </div>
 
                 <!-- Submit -->
-                <button type="submit" id="loginBtn" class="btn-login w-full py-3.5 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2 mt-2">
-                    <i class="fa-solid fa-right-to-bracket"></i>
-                    <span id="btnText">Sign In to NOC Portal</span>
+                <button type="submit" id="loginBtn" class="btn-login" aria-label="Sign In to NOC Portal">
+                    <span id="btnText">LOGIN</span>
                 </button>
             </form>
 
-            <p class="text-center text-slate-500 text-xs mt-5">Ask your portal administrator to create your account.</p>
         </div>
 
-        <p class="text-center text-slate-700 text-[10px] mt-4">© 2026 Safaricom Ethiopia PLC — NOC Operations</p>
+        <p class="page-footer">© 2026 Safaricom Ethiopia PLC — NOC Operations</p>
     </div>
 
     <script>
@@ -191,7 +371,7 @@
             const username = usernameInput.value.trim().toLowerCase();
             const password = passwordInput.value;
             const errorBox = document.getElementById('errorBox');
-            const errorText = errorBox.querySelector('p');
+            const errorText = document.getElementById('errorText');
             const button = document.getElementById('loginBtn');
             const btnText = document.getElementById('btnText');
             button.disabled = true;
@@ -225,10 +405,9 @@
                 sessionStorage.setItem('nocUserRole', result.user.role);
                 sessionStorage.setItem('nocDisplayName', result.user.full_name);
                 btnText.textContent = 'Authenticated — Redirecting…';
-                button.innerHTML = '<i class="fa-solid fa-circle-check"></i> <span>Authenticated — Redirecting…</span>';
                 window.location.replace('/');
             } catch (error) {
-                errorText.textContent = error.message || 'Unable to sign in. Please try again.';
+                if (errorText) errorText.textContent = error.message || 'Unable to sign in. Please try again.';
                 errorBox.classList.remove('hidden');
                 errorBox.classList.add('animate-shake');
                 setTimeout(() => errorBox.classList.remove('animate-shake'), 500);
@@ -245,36 +424,40 @@
             const icon = document.getElementById('eyeIcon');
             if (pw.type === 'password') {
                 pw.type = 'text';
-                icon.className = 'fa-solid fa-eye-slash text-xs';
+                icon.className = 'fa-solid fa-eye-slash';
             } else {
                 pw.type = 'password';
-                icon.className = 'fa-solid fa-eye text-xs';
+                icon.className = 'fa-solid fa-eye';
             }
         }
 
         // ─── Reset password modal ────────────────────────────────────────────────
         function openResetModal() {
             const modal = document.getElementById('resetModal');
-            modal.classList.remove('hidden');
+            modal.style.display = 'flex';
             document.body.style.overflow = 'hidden';
-            setTimeout(() => document.getElementById('resetToken').focus(), 50);
+            setTimeout(() => { const f = document.getElementById('resetToken'); if (f) f.focus(); }, 50);
         }
         function closeResetModal() {
-            document.getElementById('resetModal').classList.add('hidden');
+            document.getElementById('resetModal').style.display = 'none';
             document.body.style.overflow = '';
             document.getElementById('resetForm').reset();
-            document.getElementById('resetError').classList.add('hidden');
-            document.getElementById('resetSuccess').classList.add('hidden');
+            document.getElementById('requestResetForm').reset();
+            const rs = document.getElementById('requestStatus');
+            if (rs) { rs.style.display = 'none'; rs.textContent = ''; }
+            document.getElementById('resetError').classList.remove('visible');
+            document.getElementById('resetSuccess').classList.remove('visible');
         }
+
         async function handleRequestReset(e) {
             e.preventDefault();
             const ident = document.getElementById('requestIdentifier').value.trim();
             const statusBox = document.getElementById('requestStatus');
             const btn = document.getElementById('requestBtn');
-            const btnText = document.getElementById('requestBtnText');
-            statusBox.classList.add('hidden');
+            const btnTxt = document.getElementById('requestBtnText');
+            statusBox.style.display = 'none';
             btn.disabled = true;
-            btnText.textContent = 'Sending…';
+            btnTxt.textContent = 'Sending…';
             try {
                 const response = await fetch('/api/v1/auth/forgot-password', {
                     method: 'POST',
@@ -292,17 +475,15 @@
                     throw new Error(detail || 'Request failed.');
                 }
                 statusBox.textContent = result.message || 'If an account exists, a reset link has been sent.';
-                statusBox.classList.remove('hidden');
-                statusBox.classList.remove('text-red-400');
-                statusBox.classList.add('text-emerald-400');
+                statusBox.style.display = 'block';
+                statusBox.style.color = '#3fb950';
             } catch (error) {
                 statusBox.textContent = error.message || 'Unable to request reset.';
-                statusBox.classList.remove('hidden');
-                statusBox.classList.remove('text-emerald-400');
-                statusBox.classList.add('text-red-400');
+                statusBox.style.display = 'block';
+                statusBox.style.color = '#f85149';
             } finally {
                 btn.disabled = false;
-                btnText.textContent = 'Send reset link';
+                btnTxt.textContent = 'Send reset link';
             }
         }
 
@@ -314,17 +495,17 @@
             const errBox = document.getElementById('resetError');
             const okBox = document.getElementById('resetSuccess');
             const btn = document.getElementById('resetBtn');
-            const btnText = document.getElementById('resetBtnText');
-            errBox.classList.add('hidden');
-            okBox.classList.add('hidden');
+            const btnTxt = document.getElementById('resetBtnText');
+            errBox.classList.remove('visible');
+            okBox.classList.remove('visible');
 
             if (newPassword !== confirmPassword) {
                 errBox.textContent = 'Passwords do not match.';
-                errBox.classList.remove('hidden');
+                errBox.classList.add('visible');
                 return;
             }
             btn.disabled = true;
-            btnText.textContent = 'Resetting…';
+            btnTxt.textContent = 'Resetting…';
             try {
                 const response = await fetch('/api/v1/auth/reset-password/confirm', {
                     method: 'POST',
@@ -338,26 +519,26 @@
                     throw new Error(detail || 'Reset failed.');
                 }
                 okBox.textContent = 'Password reset successful. You can now sign in.';
-                okBox.classList.remove('hidden');
+                okBox.classList.add('visible');
                 document.getElementById('resetForm').reset();
                 setTimeout(() => { closeResetModal(); document.getElementById('username').focus(); }, 1500);
             } catch (error) {
                 errBox.textContent = error.message || 'Unable to reset password.';
-                errBox.classList.remove('hidden');
+                errBox.classList.add('visible');
             } finally {
                 btn.disabled = false;
-                btnText.textContent = 'Reset password';
+                btnTxt.textContent = 'Reset password';
             }
         }
 
-        // Caps Lock detection
+        // Caps Lock
         (function initCapsLock() {
             const pw = document.getElementById('password');
             const warn = document.getElementById('capsWarning');
             if (!pw || !warn) return;
             function check(e) {
                 const on = e.getModifierState && e.getModifierState('CapsLock');
-                warn.classList.toggle('hidden', !on);
+                warn.classList.toggle('visible', on);
             }
             pw.addEventListener('keydown', check);
             pw.addEventListener('keyup', check);
@@ -378,10 +559,9 @@
             if (u && !u.value) u.focus();
         });
 
-        document.addEventListener('keydown', (e) => {
-            if (e.key === 'Escape') closeResetModal();
-        });
-        // Auto-open reset modal if reset_token is in URL (from email link)
+        document.addEventListener('keydown', e => { if (e.key === 'Escape') closeResetModal(); });
+
+        // Auto-open reset modal if reset_token in URL
         (function initResetTokenFromUrl() {
             const params = new URLSearchParams(window.location.search);
             const token = params.get('reset_token');
@@ -389,81 +569,82 @@
                 openResetModal();
                 const field = document.getElementById('resetToken');
                 if (field) field.value = token;
-                // Clean URL
-                if (window.history && window.history.replaceState) {
+                if (window.history && window.history.replaceState)
                     window.history.replaceState({}, '', window.location.pathname);
-                }
             }
         })();
 
-        // ─── Animated background dots ────────────────────────────────────────────
+        // Animated background dots
         (function spawnDots() {
             const container = document.getElementById('bgDots');
-            const colors = ['rgba(0,176,80,0.3)', 'rgba(0,100,200,0.25)', 'rgba(100,200,255,0.2)', 'rgba(255,255,255,0.15)'];
-            for (let i = 0; i < 22; i++) {
+            const colors = ['rgba(88,166,255,0.12)', 'rgba(63,185,80,0.1)', 'rgba(240,136,62,0.08)', 'rgba(255,255,255,0.05)'];
+            for (let i = 0; i < 18; i++) {
                 const dot = document.createElement('div');
-                const size = Math.random() * 180 + 20;
+                const size = Math.random() * 160 + 30;
                 dot.className = 'dot';
                 dot.style.cssText = `
                     width:${size}px; height:${size}px;
                     left:${Math.random()*100}%; top:${Math.random()*100}%;
                     background: radial-gradient(circle, ${colors[i%colors.length]} 0%, transparent 70%);
-                    animation-duration: ${8 + Math.random()*14}s;
+                    animation-duration: ${10 + Math.random()*16}s;
                     animation-delay: ${-Math.random()*10}s;
-                    filter: blur(${size*0.3}px);
+                    filter: blur(${size*0.35}px);
                 `;
                 container.appendChild(dot);
             }
         })();
     </script>
+
     <!-- Reset password modal -->
-    <div id="resetModal" class="hidden fixed inset-0 z-50 flex items-center justify-center px-4" role="dialog" aria-modal="true" aria-labelledby="resetTitle">
-        <div class="absolute inset-0 bg-slate-950/80 backdrop-blur-sm" onclick="closeResetModal()"></div>
-        <div class="relative glass-card rounded-2xl p-6 w-full max-w-md shadow-2xl animate-slide-up">
-            <div class="flex items-center justify-between mb-4">
-                <h2 id="resetTitle" class="text-white font-bold text-lg">Reset password</h2>
-                <button type="button" onclick="closeResetModal()" class="text-slate-400 hover:text-white transition-colors" aria-label="Close">
+    <div id="resetModal" style="display:none; position:fixed; inset:0; z-index:50; align-items:center; justify-content:center; padding:16px;"
+         role="dialog" aria-modal="true" aria-labelledby="resetTitle">
+        <div style="position:absolute;inset:0;background:rgba(1,4,9,0.85);backdrop-filter:blur(4px);" onclick="closeResetModal()"></div>
+        <div class="modal-card animate-slide-up" style="position:relative;z-index:1;">
+            <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;">
+                <h2 id="resetTitle" class="modal-title">Reset password</h2>
+                <button type="button" onclick="closeResetModal()"
+                        style="background:none;border:none;color:#8b949e;cursor:pointer;font-size:16px;" aria-label="Close">
                     <i class="fa-solid fa-xmark"></i>
                 </button>
             </div>
-            <p class="text-slate-400 text-xs mb-4">
-                Enter your username or email to receive a reset link, or paste a token you already have.
-            </p>
+            <p class="modal-sub">Enter your username or email to receive a reset link, or paste a token you already have.</p>
+
             <!-- Request reset -->
-            <form id="requestResetForm" class="space-y-3 mb-4 pb-4 border-b border-slate-700/50" onsubmit="handleRequestReset(event)">
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Username or email</label>
+            <form id="requestResetForm" onsubmit="handleRequestReset(event)"
+                  style="margin-bottom:16px;padding-bottom:16px;border-bottom:1px solid #21262d;">
+                <div class="modal-field">
+                    <label class="modal-label">Username or email</label>
                     <input type="text" id="requestIdentifier" required autocomplete="username"
-                        class="input-field w-full rounded-xl px-4 py-3 text-sm" placeholder="your.username or you@example.com">
+                        class="glass-input" placeholder="your.username or you@example.com">
                 </div>
-                <div id="requestStatus" role="status" aria-live="polite" class="hidden text-xs font-semibold"></div>
-                <button type="submit" id="requestBtn" class="w-full py-2.5 rounded-xl border border-slate-600 text-slate-200 font-semibold text-sm hover:bg-slate-800 transition-colors flex items-center justify-center gap-2">
+                <div id="requestStatus" style="display:none;font-size:12px;font-weight:600;margin-bottom:10px;"></div>
+                <button type="submit" id="requestBtn" class="btn-secondary">
                     <i class="fa-solid fa-envelope"></i>
                     <span id="requestBtnText">Send reset link</span>
                 </button>
             </form>
+
             <!-- Reset with token -->
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Reset token</label>
+            <form id="resetForm" onsubmit="handleReset(event)">
+                <div class="modal-field">
+                    <label class="modal-label">Reset token</label>
                     <input type="text" id="resetToken" required autocomplete="off"
-                        class="input-field w-full rounded-xl px-4 py-3 text-sm font-mono"
+                        class="glass-input" style="font-family:monospace;"
                         placeholder="Paste the token from your administrator">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">New password</label>
-                    <input type="password" id="resetNewPassword" required minlength="12" maxlength="72" autocomplete="new-password"
-                        class="input-field w-full rounded-xl px-4 py-3 text-sm" placeholder="At least 12 characters">
+                <div class="modal-field">
+                    <label class="modal-label">New password</label>
+                    <input type="password" id="resetNewPassword" required minlength="12" maxlength="72"
+                        autocomplete="new-password" class="glass-input" placeholder="At least 12 characters">
                 </div>
-                <div>
-                    <label class="block text-xs font-bold text-slate-400 uppercase tracking-wider mb-1.5">Confirm password</label>
-                    <input type="password" id="resetConfirmPassword" required minlength="12" maxlength="72" autocomplete="new-password"
-                        class="input-field w-full rounded-xl px-4 py-3 text-sm" placeholder="Repeat new password">
+                <div class="modal-field">
+                    <label class="modal-label">Confirm password</label>
+                    <input type="password" id="resetConfirmPassword" required minlength="12" maxlength="72"
+                        autocomplete="new-password" class="glass-input" placeholder="Repeat new password">
                 </div>
-                <div id="resetError" role="alert" aria-live="assertive"
-                    class="hidden bg-red-950/60 border border-red-700/40 rounded-xl px-4 py-2.5 text-red-400 text-xs font-semibold"></div>
-                <div id="resetSuccess" role="status" aria-live="polite"
-                    class="hidden bg-emerald-950/60 border border-emerald-700/40 rounded-xl px-4 py-2.5 text-emerald-400 text-xs font-semibold"></div>
-                <button type="submit" id="resetBtn" class="btn-login w-full py-3 rounded-xl text-white font-bold text-sm flex items-center justify-center gap-2">
+                <div id="resetError" class="reset-error" role="alert" aria-live="assertive"></div>
+                <div id="resetSuccess" class="reset-ok" role="status" aria-live="polite"></div>
+                <button type="submit" id="resetBtn" class="btn-reset">
                     <i class="fa-solid fa-key"></i>
                     <span id="resetBtnText">Reset password</span>
                 </button>
