@@ -4,7 +4,7 @@ from datetime import datetime, timedelta, timezone
 
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 
 from server.controllers.common import record_audit
 from server.database import get_db
@@ -28,7 +28,8 @@ def list_incidents(
     offset: int = Query(default=0, ge=0),
     db: Session = Depends(get_db),
 ):
-    query = select(Incident).order_by(Incident.created_at.desc())
+    # joinedload on created_by (many-to-one) avoids N+1 without Cartesian explosion.
+    query = select(Incident).options(joinedload(Incident.created_by)).order_by(Incident.created_at.desc())
     if status:
         query = query.where(Incident.status == status)
     # Server-side 3-day retention for resolved incidents (no deletion).

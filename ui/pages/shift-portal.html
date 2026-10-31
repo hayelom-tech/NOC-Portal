@@ -10,6 +10,7 @@
     <script>window.tailwind = window.tailwind || {}; tailwind.config = { darkMode: 'class' };</script>
     <script src="/assets/vendor/tailwindcss.js?v=2" onerror="this.onerror=null;this.src='https://cdn.tailwindcss.com'"></script>
     <link rel="stylesheet" href="/assets/vendor/fontawesome/css/all.min.css" onerror="this.onerror=null;this.href='https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css'">
+    <script src="/assets/vendor/html2canvas.min.js"></script>
     <style>
         .knowledge-domain-nav,
         .sidebar-subnav {
@@ -331,6 +332,12 @@
                 transition: none;
             }
         }
+    
+        /* Zebra striping for Excel-style notification tables (both columns) */
+        #incidentCaptureZone tbody tr:nth-child(even) td,
+        #changeCaptureZone tbody tr:nth-child(even) td {
+            background-color: #d1d5db;
+        }
     </style>
 </head>
 <body class="min-h-screen bg-slate-50 text-slate-900 transition-colors duration-200 dark:bg-slate-950 dark:text-slate-100">
@@ -340,25 +347,17 @@
             <nav role="tablist" aria-label="Portal sections" class="flex gap-1 overflow-x-auto rounded-2xl border border-slate-700/50 bg-slate-800 p-2 shadow-xl lg:flex-col">
                 <button id="homeTab" type="button" role="tab" aria-selected="true" aria-controls="homePanel" data-tab="home" class="nav-btn rounded-xl bg-emerald-600 px-4 py-3 text-left text-sm font-bold text-white whitespace-nowrap shadow-md">Home</button>
                 <button id="handoverTab" type="button" role="tab" aria-selected="false" aria-controls="handoverPanel" data-tab="handover" class="nav-btn rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">Shift Handover</button>
-                <button id="incidentTab" type="button" role="tab" aria-selected="false" aria-expanded="false" aria-controls="incidentPanel incidentSubNav" data-tab="incident" class="nav-btn flex items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">
-                    <span class="flex items-center gap-3"><i class="fa-solid fa-triangle-exclamation w-5 text-center"></i>Incident Management</span>
-                    <i id="incidentChevron" class="fa-solid fa-chevron-down text-xs transition-transform"></i>
+                <button id="incidentTab" type="button" role="tab" aria-selected="false" aria-controls="incidentPanel" data-tab="incident" class="nav-btn rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">
+                    Incident Management
                 </button>
-                <div id="incidentSubNav" aria-hidden="true" class="sidebar-subnav space-y-1 border-l border-slate-700 py-1 pl-3 ml-2 lg:ml-4">
-                    <button type="button" data-incident-sub="ongoing" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-slate-700/60 hover:text-white">
-                        <i class="fa-solid fa-clock-rotate-left w-4 text-center text-amber-400"></i>ongoing
-                    </button>
-                    <button type="button" data-incident-sub="closed" class="flex w-full items-center gap-3 rounded-lg px-3 py-2 text-left text-sm text-slate-300 transition hover:bg-slate-700/60 hover:text-white">
-                        <i class="fa-solid fa-circle-check w-4 text-center text-emerald-400"></i>closed
-                    </button>
-                </div>
-                <button id="changeTab" type="button" role="tab" aria-selected="false" aria-controls="changePanel" data-tab="change" class="nav-btn flex items-center gap-3 rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">
-                    <i class="fa-solid fa-code-compare w-5 text-center"></i>Change Management
+                
+                <button id="changeTab" type="button" role="tab" aria-selected="false" aria-controls="changePanel" data-tab="change" class="nav-btn rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">
+                    Change Management
                 </button>
                 <button id="l2Tab" type="button" role="tab" aria-selected="false" aria-controls="l2Panel" data-tab="l2" class="nav-btn rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">L2 Support</button>
                 <button id="processTab" type="button" role="tab" aria-selected="false" aria-controls="processPanel" data-tab="process" class="nav-btn rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">NOC Process</button>
                 <button id="knowledgeTab" type="button" role="tab" aria-selected="false" aria-expanded="false" aria-controls="knowledgePanel knowledgeDomainNav" data-tab="knowledge" class="nav-btn flex items-center justify-between rounded-xl px-4 py-3 text-left text-sm font-medium text-slate-400 whitespace-nowrap transition hover:bg-slate-700/50 hover:text-white">
-                    <span class="flex items-center gap-3"><i class="fa-solid fa-book-open w-5 text-center"></i>Knowledge Hub</span>
+                    <span>Knowledge Hub</span>
                     <i id="knowledgeChevron" class="fa-solid fa-chevron-down text-xs transition-transform"></i>
                 </button>
             </nav>
@@ -575,316 +574,266 @@
         </div>
 
         <div id="incidentPanel" role="tabpanel" aria-labelledby="incidentTab" data-tab-panel="incident" hidden class="space-y-6">
-            <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
-                <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-red-950/60 text-red-400 border border-red-800/40">
-                                <i class="fa-solid fa-triangle-exclamation text-sm"></i>
-                            </span>
-                            <h2 id="incidentViewTitle" class="text-lg font-semibold text-white">Incident Management</h2>
-                        </div>
-                        <p class="mt-1 text-sm text-slate-400">Track real-time network outages, operational challenges, and resolution logs.</p>
-                    </div>
-                    <div class="flex flex-wrap items-center gap-2">
-                        <button type="button" data-incident-pill="all" class="rounded-lg bg-slate-800 border border-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-white transition">All (6)</button>
-                        <button type="button" data-incident-pill="ongoing" class="rounded-lg bg-amber-500/15 border border-amber-500/30 px-3 py-1.5 text-xs font-semibold text-amber-300 hover:bg-amber-500/25 transition flex items-center gap-1.5">
-                            <span class="inline-block h-2 w-2 rounded-full bg-amber-400 animate-pulse"></span>
-                            ongoing (3)
-                        </button>
-                        <button type="button" data-incident-pill="closed" class="rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-300 hover:bg-emerald-500/25 transition flex items-center gap-1.5">
-                            <span class="inline-block h-2 w-2 rounded-full bg-emerald-400"></span>
-                            closed (3)
-                        </button>
-                    </div>
-                </div>
 
-                <!-- KPI Metric Cards -->
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-6">
-                    <div class="rounded-xl border border-red-900/40 bg-red-950/20 p-3.5">
-                        <span class="text-xs font-medium text-red-300 flex items-center gap-1.5"><i class="fa-solid fa-bolt"></i> P1 Critical</span>
-                        <p class="mt-1 text-2xl font-bold text-red-100">1</p>
-                        <p class="text-[11px] text-red-400/80">Active high-priority outage</p>
-                    </div>
-                    <div class="rounded-xl border border-amber-900/40 bg-amber-950/20 p-3.5">
-                        <span class="text-xs font-medium text-amber-300 flex items-center gap-1.5"><i class="fa-solid fa-clock-rotate-left"></i> P2 Major (Ongoing)</span>
-                        <p class="mt-1 text-2xl font-bold text-amber-100">2</p>
-                        <p class="text-[11px] text-amber-400/80">Engineers actively working</p>
-                    </div>
-                    <div class="rounded-xl border border-sky-900/40 bg-sky-950/20 p-3.5">
-                        <span class="text-xs font-medium text-sky-300 flex items-center gap-1.5"><i class="fa-solid fa-circle-info"></i> P3 Minor</span>
-                        <p class="mt-1 text-2xl font-bold text-sky-100">0</p>
-                        <p class="text-[11px] text-sky-400/80">Degraded non-critical links</p>
-                    </div>
-                    <div class="rounded-xl border border-emerald-900/40 bg-emerald-950/20 p-3.5">
-                        <span class="text-xs font-medium text-emerald-300 flex items-center gap-1.5"><i class="fa-solid fa-circle-check"></i> Resolved / Closed</span>
-                        <p class="mt-1 text-2xl font-bold text-emerald-100">3</p>
-                        <p class="text-[11px] text-emerald-400/80">Post-mortem &amp; sign-off complete</p>
-                    </div>
-                </div>
+    <!-- Status Tabs -->
+    <div class="flex gap-2 rounded-xl bg-slate-900 p-2">
+        <button type="button" onclick="switchIncidentView('ongoing')" id="incident-tab-ongoing" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white">Ongoing</button>
+        <button type="button" onclick="switchIncidentView('closed')" id="incident-tab-closed" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white">Closed</button>
+        <button type="button" onclick="switchIncidentView('resolved')" id="incident-tab-resolved" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white">Resolved</button>
+    </div>
 
-                <!-- Incident List -->
-                <div class="space-y-3" id="incidentItemsList">
-                    <!-- Ongoing Incident 1 -->
-                    <div data-incident-status="ongoing" class="rounded-xl border border-red-900/50 bg-slate-950/60 p-4 transition hover:border-red-700/60">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-red-600/20 border border-red-500/40 px-2 py-0.5 text-xs font-bold text-red-300">P1 CRITICAL</span>
-                                <span class="text-xs font-mono text-slate-400">INC-ETH-2026-1049</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">Core &amp; TX</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 text-xs font-medium text-amber-300">
-                                <span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span> ongoing (1h 42m)
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-100">Addis Ababa West Aggregation Ring Degraded — Optical Fiber Protection Switched</h3>
-                        <p class="mt-1 text-xs text-slate-400">Multiple DWDM channels experienced high bit error rate on span 3. Optical auto-protection activated; core traffic rerouted via secondary path. L2 Field Optical Team dispatched to Tor Hailoch repeater station.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-400">
-                            <span><i class="fa-solid fa-location-dot text-red-400 mr-1"></i>Addis Ababa West</span>
-                            <span><i class="fa-solid fa-user-gear text-slate-400 mr-1"></i>Assigned: Front Office TX / L2 Fiber Team</span>
-                            <span><i class="fa-solid fa-clock text-slate-400 mr-1"></i>Opened: 08:45 EAT</span>
-                        </div>
-                    </div>
-
-                    <!-- Ongoing Incident 2 -->
-                    <div data-incident-status="ongoing" class="rounded-xl border border-amber-900/50 bg-slate-950/60 p-4 transition hover:border-amber-700/60">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-amber-600/20 border border-amber-500/40 px-2 py-0.5 text-xs font-bold text-amber-300">P2 MAJOR</span>
-                                <span class="text-xs font-mono text-slate-400">INC-ETH-2026-1052</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">Power &amp; RAN</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 text-xs font-medium text-amber-300">
-                                <span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span> ongoing (48m)
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-100">Hawassa Zone 4 Sites Down — Commercial Grid Power Outage &amp; Low Battery Backup</h3>
-                        <p class="mt-1 text-xs text-slate-400">Regional utility outage affected 4 macro BTS sites. Site HWS-041 generator failed automatic start due to starter battery discharge. Mobile generator unit deployed by regional power contractor.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-400">
-                            <span><i class="fa-solid fa-location-dot text-amber-400 mr-1"></i>Hawassa Region</span>
-                            <span><i class="fa-solid fa-user-gear text-slate-400 mr-1"></i>Assigned: Regional Power Operations</span>
-                            <span><i class="fa-solid fa-clock text-slate-400 mr-1"></i>Opened: 09:39 EAT</span>
-                        </div>
-                    </div>
-
-                    <!-- Ongoing Incident 3 -->
-                    <div data-incident-status="ongoing" class="rounded-xl border border-amber-900/50 bg-slate-950/60 p-4 transition hover:border-amber-700/60">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-amber-600/20 border border-amber-500/40 px-2 py-0.5 text-xs font-bold text-amber-300">P2 MAJOR</span>
-                                <span class="text-xs font-mono text-slate-400">INC-ETH-2026-1055</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">PS Core</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 text-xs font-medium text-amber-300">
-                                <span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span> ongoing (22m)
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-100">Dire Dawa SMSC Delivery Notification Queue Elevation</h3>
-                        <p class="mt-1 text-xs text-slate-400">Alert triggered on SMS delivery report latency exceeding 4.2 seconds threshold. L2 PS Core engineer analyzing SMPP bind throughput and database thread contention.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-400">
-                            <span><i class="fa-solid fa-location-dot text-amber-400 mr-1"></i>Dire Dawa Data Center</span>
-                            <span><i class="fa-solid fa-user-gear text-slate-400 mr-1"></i>Assigned: Core L2 On-Call</span>
-                            <span><i class="fa-solid fa-clock text-slate-400 mr-1"></i>Opened: 10:05 EAT</span>
-                        </div>
-                    </div>
-
-                    <!-- Closed Incident 1 -->
-                    <div data-incident-status="closed" class="rounded-xl border border-slate-800 bg-slate-950/40 p-4 transition hover:border-slate-700">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-slate-700/60 px-2 py-0.5 text-xs font-semibold text-slate-300">P1 CRITICAL</span>
-                                <span class="text-xs font-mono text-slate-400">INC-ETH-2026-1038</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-400">RAN</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
-                                <i class="fa-solid fa-circle-check text-[10px]"></i> closed (Duration 1h 15m)
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-200">Bole International Airport Indoor Distributed Antenna System Carrier Flapping</h3>
-                        <p class="mt-1 text-xs text-slate-400">Sector 2 RRU optical SFP transceiver replaced following intermittent link loss alarm. Full throughput verification completed with 100% test call success rate.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-500">
-                            <span><i class="fa-solid fa-location-dot text-slate-500 mr-1"></i>Addis Ababa Bole</span>
-                            <span><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Root Cause: Faulty 10G SFP Module</span>
-                            <span><i class="fa-solid fa-clock text-slate-500 mr-1"></i>Resolved: 06:30 EAT</span>
-                        </div>
-                    </div>
-
-                    <!-- Closed Incident 2 -->
-                    <div data-incident-status="closed" class="rounded-xl border border-slate-800 bg-slate-950/40 p-4 transition hover:border-slate-700">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-slate-700/60 px-2 py-0.5 text-xs font-semibold text-slate-300">P2 MAJOR</span>
-                                <span class="text-xs font-mono text-slate-400">INC-ETH-2026-1041</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-400">TX</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
-                                <i class="fa-solid fa-circle-check text-[10px]"></i> closed (Duration 2h 05m)
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-200">Mekelle Transmission Link Optical Attenuation on Span 4</h3>
-                        <p class="mt-1 text-xs text-slate-400">Optical connector cleaned and re-seated at ODF cabinet. Optical receive power restored from -26.4 dBm to normal -16.2 dBm.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-500">
-                            <span><i class="fa-solid fa-location-dot text-slate-500 mr-1"></i>Mekelle Region</span>
-                            <span><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Root Cause: Dust Contamination on Fiber Connector</span>
-                            <span><i class="fa-solid fa-clock text-slate-500 mr-1"></i>Resolved: 04:15 EAT</span>
-                        </div>
-                    </div>
-
-                    <!-- Closed Incident 3 -->
-                    <div data-incident-status="closed" class="rounded-xl border border-slate-800 bg-slate-950/40 p-4 transition hover:border-slate-700">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-slate-700/60 px-2 py-0.5 text-xs font-semibold text-slate-300">P3 MINOR</span>
-                                <span class="text-xs font-mono text-slate-400">INC-ETH-2026-1044</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-400">Tools</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
-                                <i class="fa-solid fa-circle-check text-[10px]"></i> closed (Duration 35m)
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-200">Adama NOC Monitoring Server SNMP Poller Process Hung</h3>
-                        <p class="mt-1 text-xs text-slate-400">Monitoring daemon restart performed. Historical alarm synchronization completed without data loss.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-500">
-                            <span><i class="fa-solid fa-location-dot text-slate-500 mr-1"></i>Adama Server Farm</span>
-                            <span><i class="fa-solid fa-circle-check text-emerald-500 mr-1"></i>Root Cause: Daemon Memory Leak</span>
-                            <span><i class="fa-solid fa-clock text-slate-500 mr-1"></i>Resolved: 02:40 EAT</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
+    <!-- Top Controls -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900 p-4 rounded-xl">
+        <div id="incidentSelectorWrap" class="hidden flex-1 max-w-md">
+            <label class="block text-xs text-slate-400 mb-1">Select Incident to Edit</label>
+            <select id="incidentSelector" onchange="loadSelectedIncident()" class="w-full rounded bg-slate-950 px-3 py-2 text-sm text-white border border-slate-700">
+                <option value="">-- Select an incident --</option>
+            </select>
         </div>
+
+        <div class="flex gap-2">
+            <button onclick="resetIncidentForm()" class="rounded bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-500">Create New</button>
+            <button onclick="submitIncident()" class="rounded bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-500">Submit / Save</button>
+        </div>
+
+        <button onclick="downloadIncidentImage()" class="rounded bg-slate-700 px-4 py-2 text-sm font-bold text-white hover:bg-slate-600">
+            <i class="fa-solid fa-camera mr-2"></i>Download Image
+        </button>
+    </div>
+
+    <!-- The Excel-Style Table -->
+    <div class="overflow-x-auto bg-white p-4">
+        <div id="incidentCaptureZone" class="mx-auto max-w-4xl border border-gray-600 bg-white text-black" style="font-family: 'Times New Roman', Times, serif;">
+            <table class="w-full border-collapse text-base">
+                <thead>
+                    <tr>
+                        <th colspan="2" class="border border-gray-600 bg-black p-2 text-center text-lg font-normal text-white">
+                            Incident Closure Notification
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="w-1/3 border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Priority</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0">
+                            <select id="inc_priority" class="w-full bg-transparent p-1 outline-none text-gray-500">
+                                <option value="P1">P1</option>
+                                <option value="P2">P2</option>
+                                <option value="P3" selected>P3</option>
+                                <option value="P4">P4</option>
+                                <option value="P5">P5</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Reference</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_ref" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="INC000000537934"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Description</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><textarea id="inc_desc" rows="1" class="w-full resize-none bg-transparent p-1 outline-none text-gray-500" placeholder="In South-Due to HUB site 414051..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Business impact</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_biz_impact" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="Voice data and SMS services were impacted"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">System impact</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_sys_impact" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="2G, 3G and 4G technologies were impacted"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Incident Owner</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_owner" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="ACME"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Incident start time</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="datetime-local" id="inc_start" class="w-full bg-transparent p-1 outline-none text-gray-500"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Incident end time</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="datetime-local" id="inc_end" class="w-full bg-transparent p-1 outline-none text-gray-500"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">MTTR</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_mttr" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="11:41:41"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Status</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0">
+                            <select id="inc_status" class="w-full bg-transparent p-1 outline-none text-gray-500">
+                                <option value="ongoing">Ongoing</option>
+                                <option value="resolved" selected>Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Reported by</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_reported" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="Nokia NOC team"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Incident support group</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_support" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="FE and STEP regional team"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Problem statement</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><textarea id="inc_problem" rows="1" class="w-full resize-none bg-transparent p-1 outline-none text-gray-500"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700 align-top">Update</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><textarea id="inc_update" rows="3" class="w-full resize-none bg-transparent p-1 outline-none text-gray-500" placeholder="* Due to site security issues FE was unable..."></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Root cause</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_root" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="ET rectifier cabinet circuit breaker was tripped"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Resolution</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="inc_resolution" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="Breaker Turned ON"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-8">
+        <h3 class="mb-4 text-lg font-bold text-white">Recently Resolved (Last 3 Days)</h3>
+        <div id="resolved-list" class="space-y-2"></div>
+    </div>
+
+</div>
+
 
         <div id="changePanel" role="tabpanel" aria-labelledby="changeTab" data-tab-panel="change" hidden class="space-y-6">
-            <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
-                <div class="mb-5 flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                        <div class="flex items-center gap-2">
-                            <span class="flex h-8 w-8 items-center justify-center rounded-lg bg-sky-950/60 text-sky-400 border border-sky-800/40">
-                                <i class="fa-solid fa-code-compare text-sm"></i>
-                            </span>
-                            <h2 class="text-lg font-semibold text-white">Change Management</h2>
-                        </div>
-                        <p class="mt-1 text-sm text-slate-400">Scheduled maintenance activities, software rollouts, and network reconfiguration requests.</p>
-                    </div>
-                    <div class="flex items-center gap-2">
-                        <span class="inline-flex items-center gap-1.5 rounded-lg bg-emerald-500/15 border border-emerald-500/30 px-3 py-1.5 text-xs font-semibold text-emerald-300">
-                            <span class="h-2 w-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                            Tonight's Maintenance Window: 00:00 - 05:00 EAT
-                        </span>
-                    </div>
-                </div>
 
-                <!-- KPI Metric Cards -->
-                <div class="grid grid-cols-2 gap-3 sm:grid-cols-4 mb-6">
-                    <div class="rounded-xl border border-amber-900/40 bg-amber-950/20 p-3.5">
-                        <span class="text-xs font-medium text-amber-300 flex items-center gap-1.5"><i class="fa-solid fa-spinner fa-spin-pulse"></i> In Progress</span>
-                        <p class="mt-1 text-2xl font-bold text-amber-100">1</p>
-                        <p class="text-[11px] text-amber-400/80">Active implementation</p>
-                    </div>
-                    <div class="rounded-xl border border-sky-900/40 bg-sky-950/20 p-3.5">
-                        <span class="text-xs font-medium text-sky-300 flex items-center gap-1.5"><i class="fa-solid fa-calendar-days"></i> Scheduled Tonight</span>
-                        <p class="mt-1 text-2xl font-bold text-sky-100">2</p>
-                        <p class="text-[11px] text-sky-400/80">Approved for window</p>
-                    </div>
-                    <div class="rounded-xl border border-emerald-900/40 bg-emerald-950/20 p-3.5">
-                        <span class="text-xs font-medium text-emerald-300 flex items-center gap-1.5"><i class="fa-solid fa-check-double"></i> Completed (Week)</span>
-                        <p class="mt-1 text-2xl font-bold text-emerald-100">8</p>
-                        <p class="text-[11px] text-emerald-400/80">Successfully validated</p>
-                    </div>
-                    <div class="rounded-xl border border-indigo-900/40 bg-indigo-950/20 p-3.5">
-                        <span class="text-xs font-medium text-indigo-300 flex items-center gap-1.5"><i class="fa-solid fa-shield-halved"></i> Rollback Count</span>
-                        <p class="mt-1 text-2xl font-bold text-indigo-100">0</p>
-                        <p class="text-[11px] text-indigo-400/80">100% execution success</p>
-                    </div>
-                </div>
+    <!-- Status Tabs -->
+    <div class="flex flex-wrap gap-2 rounded-xl bg-slate-900 p-2">
+        <button type="button" onclick="switchChangeView('scheduled')" id="change-tab-scheduled" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white">Scheduled</button>
+        <button type="button" onclick="switchChangeView('in_progress')" id="change-tab-in_progress" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white">In Progress</button>
+        <button type="button" onclick="switchChangeView('completed')" id="change-tab-completed" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white">Completed</button>
+        <button type="button" onclick="switchChangeView('cancelled')" id="change-tab-cancelled" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white">Cancelled</button>
+        <button type="button" onclick="switchChangeView('rollback')" id="change-tab-rollback" class="rounded-lg px-4 py-2 text-sm font-bold text-slate-300 transition hover:bg-slate-800 hover:text-white">Rollback</button>
+    </div>
 
-                <!-- Change Requests List -->
-                <div class="space-y-3">
-                    <!-- CR 1: In Progress -->
-                    <div class="rounded-xl border border-amber-900/50 bg-slate-950/60 p-4 transition hover:border-amber-700/60">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-sky-600/20 border border-sky-500/40 px-2 py-0.5 text-xs font-bold text-sky-300">CR-ETH-2026-088</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">Core Network</span>
-                                <span class="rounded bg-amber-500/20 px-2 py-0.5 text-[11px] font-medium text-amber-300">Risk: Medium</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-amber-500/15 border border-amber-500/30 px-2.5 py-0.5 text-xs font-medium text-amber-300">
-                                <span class="h-1.5 w-1.5 rounded-full bg-amber-400 animate-pulse"></span> In Execution
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-100">Addis Ababa Core Router BGP Software Upgrade &amp; Failover Verification</h3>
-                        <p class="mt-1 text-xs text-slate-400">Upgrading JunOS on PE-Router-01 to version 23.4R1. Pre-checks completed; BGP graceful restart enabled. Traffic actively draining to PE-Router-02 standby pair.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-400">
-                            <span><i class="fa-solid fa-clock text-amber-400 mr-1"></i>Window: 01:00 - 04:00 EAT</span>
-                            <span><i class="fa-solid fa-user-tie text-slate-400 mr-1"></i>Lead: Dawit Tadesse (IP Core L2)</span>
-                            <span><i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i>Approved by: NOC Lead</span>
-                        </div>
-                    </div>
-
-                    <!-- CR 2: Scheduled -->
-                    <div class="rounded-xl border border-slate-800 bg-slate-950/60 p-4 transition hover:border-slate-700">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-sky-600/20 border border-sky-500/40 px-2 py-0.5 text-xs font-bold text-sky-300">CR-ETH-2026-091</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">Transmission</span>
-                                <span class="rounded bg-red-500/20 px-2 py-0.5 text-[11px] font-medium text-red-300">Risk: High</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-500/15 border border-sky-500/30 px-2.5 py-0.5 text-xs font-medium text-sky-300">
-                                <i class="fa-solid fa-calendar-check text-[10px]"></i> Scheduled
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-100">Hawassa - Shashemene Optical Fiber Re-routing &amp; Splice Optimization</h3>
-                        <p class="mt-1 text-xs text-slate-400">Cut-over of 48-core backbone optical cable to new underground duct along Highway corridor. Protected by optical path redundancy during splicing.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-400">
-                            <span><i class="fa-solid fa-clock text-sky-400 mr-1"></i>Window: 02:00 - 05:00 EAT</span>
-                            <span><i class="fa-solid fa-user-tie text-slate-400 mr-1"></i>Lead: Bethelhem Kebede (TX L2)</span>
-                            <span><i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i>Approved by: Operations Director</span>
-                        </div>
-                    </div>
-
-                    <!-- CR 3: Scheduled -->
-                    <div class="rounded-xl border border-slate-800 bg-slate-950/60 p-4 transition hover:border-slate-700">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-sky-600/20 border border-sky-500/40 px-2 py-0.5 text-xs font-bold text-sky-300">CR-ETH-2026-094</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-300">RAN</span>
-                                <span class="rounded bg-emerald-500/20 px-2 py-0.5 text-[11px] font-medium text-emerald-300">Risk: Low</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1.5 rounded-full bg-sky-500/15 border border-sky-500/30 px-2.5 py-0.5 text-xs font-medium text-sky-300">
-                                <i class="fa-solid fa-calendar-check text-[10px]"></i> Scheduled
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-100">Dire Dawa 4G LTE Carrier Aggregation (Band 3 + Band 20) License Activation</h3>
-                        <p class="mt-1 text-xs text-slate-400">Remote software license deployment across 18 eNodeB sites in urban Dire Dawa to expand downlink capacity ahead of peak traffic hours.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-400">
-                            <span><i class="fa-solid fa-clock text-sky-400 mr-1"></i>Window: 01:30 - 03:00 EAT</span>
-                            <span><i class="fa-solid fa-user-tie text-slate-400 mr-1"></i>Lead: Samuel Haile (RAN Optimization)</span>
-                            <span><i class="fa-solid fa-circle-check text-emerald-400 mr-1"></i>Approved by: Radio Network Manager</span>
-                        </div>
-                    </div>
-
-                    <!-- CR 4: Completed -->
-                    <div class="rounded-xl border border-slate-800/60 bg-slate-950/30 p-4 transition hover:border-slate-700">
-                        <div class="flex flex-wrap items-center justify-between gap-2 mb-2">
-                            <div class="flex items-center gap-2">
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-xs font-mono text-slate-400">CR-ETH-2026-082</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-400">Power</span>
-                                <span class="rounded bg-slate-800 px-2 py-0.5 text-[11px] text-slate-400">Risk: Medium</span>
-                            </div>
-                            <span class="inline-flex items-center gap-1 rounded-full bg-emerald-500/15 border border-emerald-500/30 px-2.5 py-0.5 text-xs font-medium text-emerald-300">
-                                <i class="fa-solid fa-check text-[10px]"></i> Completed
-                            </span>
-                        </div>
-                        <h3 class="text-sm font-semibold text-slate-300">Bahr Dar Hub Data Center ATS Controller Board Replacement</h3>
-                        <p class="mt-1 text-xs text-slate-400">Automatic Transfer Switch board swapped; generator mains transfer simulation test executed successfully.</p>
-                        <div class="mt-3 flex flex-wrap items-center justify-between gap-2 border-t border-slate-800/80 pt-2.5 text-xs text-slate-500">
-                            <span><i class="fa-solid fa-calendar-check text-slate-500 mr-1"></i>Executed: 29-Oct 02:30 EAT</span>
-                            <span><i class="fa-solid fa-user-check text-slate-500 mr-1"></i>Verified by: NOC Duty Manager</span>
-                        </div>
-                    </div>
-                </div>
-            </section>
+    <!-- Top Controls -->
+    <div class="flex flex-wrap items-center justify-between gap-4 bg-slate-900 p-4 rounded-xl">
+        <div id="changeSelectorWrap" class="hidden flex-1 max-w-md">
+            <label class="block text-xs text-slate-400 mb-1">Select Change Request to Edit</label>
+            <select id="changeSelector" onchange="loadSelectedChange()" class="w-full rounded bg-slate-950 px-3 py-2 text-sm text-white border border-slate-700">
+                <option value="">-- Select a change request --</option>
+            </select>
         </div>
+
+        <div class="flex gap-2">
+            <button onclick="resetChangeForm()" class="rounded bg-blue-600 px-4 py-2 text-sm font-bold text-white hover:bg-blue-500">Create New</button>
+            <button onclick="submitChange()" class="rounded bg-emerald-600 px-4 py-2 text-sm font-bold text-white hover:bg-emerald-500">Submit / Save</button>
+        </div>
+
+        <button onclick="downloadChangeImage()" class="rounded bg-slate-700 px-4 py-2 text-sm font-bold text-white hover:bg-slate-600">
+            <i class="fa-solid fa-camera mr-2"></i>Download Image
+        </button>
+    </div>
+
+    <!-- The Excel-Style Table -->
+    <div class="overflow-x-auto bg-white p-4">
+        <div id="changeCaptureZone" class="mx-auto max-w-4xl border border-gray-600 bg-white text-black" style="font-family: 'Times New Roman', Times, serif;">
+            <table class="w-full border-collapse text-base">
+                <thead>
+                    <tr>
+                        <th colspan="2" class="border border-gray-600 bg-black p-2 text-center text-lg font-normal text-white">
+                            Change Request Notification
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td class="w-1/3 border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">CR ID</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="cr_cr_id" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="CR-ETH-2026-091"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Title</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="cr_title" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="BGP software upgrade"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Description</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><textarea id="cr_description" rows="2" class="w-full resize-none bg-transparent p-1 outline-none text-gray-500"></textarea></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Domain</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0">
+                            <select id="cr_domain" class="w-full bg-transparent p-1 outline-none text-gray-500">
+                                <option value="Core">Core</option>
+                                <option value="TX">TX</option>
+                                <option value="RAN">RAN</option>
+                                <option value="Power">Power</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Status</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0">
+                            <select id="cr_status" class="w-full bg-transparent p-1 outline-none text-gray-500">
+                                <option value="scheduled">Scheduled</option>
+                                <option value="in_progress">In Progress</option>
+                                <option value="completed">Completed</option>
+                                <option value="cancelled">Cancelled</option>
+                                <option value="rollback">Rollback</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Risk Level</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0">
+                            <select id="cr_risk_level" class="w-full bg-transparent p-1 outline-none text-gray-500">
+                                <option value="low">Low</option>
+                                <option value="medium" selected>Medium</option>
+                                <option value="high">High</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Region</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0">
+                            <select id="cr_region" class="w-full bg-transparent p-1 outline-none text-gray-500">
+                                <option value="">-- None --</option>
+                                <option value="East 1">East 1</option>
+                                <option value="East 2">East 2</option>
+                                <option value="West">West</option>
+                                <option value="North West">North West</option>
+                                <option value="North East">North East</option>
+                                <option value="North">North</option>
+                                <option value="Afar">Afar</option>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Window Start</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="datetime-local" id="cr_window_start" class="w-full bg-transparent p-1 outline-none text-gray-500"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Window End</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="datetime-local" id="cr_window_end" class="w-full bg-transparent p-1 outline-none text-gray-500"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Lead Engineer</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="cr_lead_engineer" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="Dawit Tadesse (IP Core L2)"></td>
+                    </tr>
+                    <tr>
+                        <td class="border border-gray-600 bg-gray-200 px-3 py-1 text-gray-700">Approver</td>
+                        <td class="border border-gray-600 bg-white px-1 py-0"><input type="text" id="cr_approver" class="w-full bg-transparent p-1 outline-none text-gray-500" placeholder="NOC Lead"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="mt-8">
+        <h3 class="mb-4 text-lg font-bold text-white">Recently Completed (Last 3 Days)</h3>
+        <div id="change-resolved-list" class="space-y-2"></div>
+    </div>
+
+</div>
+
 
         <div id="processPanel" role="tabpanel" aria-labelledby="processTab" data-tab-panel="process" hidden>
         <section class="rounded-xl border border-slate-800 bg-slate-900 p-5">
@@ -1034,6 +983,9 @@
         </div>
     </dialog>
     <script src="/assets/portal-core.js?v=3"></script>
+    <script src="/assets/ui-utils.js?v=1"></script>
+    <script src="/assets/incident-ui.js?v=1"></script>
+    <script src="/assets/change-ui.js?v=1"></script>
     <script src="/assets/portal-overview.js?v=3"></script>
     <script src="/assets/portal-handover.js?v=2"></script>
     <script src="/assets/portal-content.js?v=2"></script>

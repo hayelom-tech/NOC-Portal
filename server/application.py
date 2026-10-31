@@ -5,6 +5,7 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.staticfiles import StaticFiles
 
 from server.controllers.auth import router as auth_router
+from server.controllers.change_requests import router as change_requests_router
 from server.controllers.content import router as content_router
 from server.controllers.incidents import router as incidents_router
 from server.controllers.pages import router as pages_router
@@ -30,6 +31,7 @@ def create_app() -> FastAPI:
     install_middleware(app)
     for router in (
         auth_router,
+        change_requests_router,
         users_router,
         shifts_router,
         content_router,

@@ -433,7 +433,7 @@ class Incident(Base):
         Enum(IncidentPriority, name="incident_priority", values_callable=lambda x: [e.value for e in x]), default=IncidentPriority.p2, index=True
     )
     status: Mapped[IncidentStatus] = mapped_column(
-        Enum(IncidentStatus, name="incident_status"), default=IncidentStatus.ongoing, index=True
+        Enum(IncidentStatus, name="incident_status", values_callable=lambda x: [e.value for e in x]), default=IncidentStatus.ongoing, index=True
     )
     region: Mapped[CMRegion | None] = mapped_column(
         Enum(CMRegion, name="cm_region", values_callable=lambda x: [e.value for e in x]), nullable=True, index=True
@@ -482,10 +482,10 @@ class ChangeRequest(Base):
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     domain: Mapped[str] = mapped_column(String(50), index=True)  # Core, TX, RAN, Power
     status: Mapped[ChangeStatus] = mapped_column(
-        Enum(ChangeStatus, name="change_status"), default=ChangeStatus.scheduled, index=True
+        Enum(ChangeStatus, name="change_status", values_callable=lambda x: [e.value for e in x]), default=ChangeStatus.scheduled, index=True
     )
     risk_level: Mapped[ChangeRisk] = mapped_column(
-        Enum(ChangeRisk, name="change_risk"), default=ChangeRisk.medium
+        Enum(ChangeRisk, name="change_risk", values_callable=lambda x: [e.value for e in x]), default=ChangeRisk.medium
     )
     region: Mapped[CMRegion | None] = mapped_column(
         Enum(CMRegion, name="cm_region", values_callable=lambda x: [e.value for e in x]), nullable=True, index=True
